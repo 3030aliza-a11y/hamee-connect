@@ -52,6 +52,15 @@ function doPost(e) {
   const lock = LockService.getScriptLock();
   lock.waitLock(20000);
   try {
+    if (d.action === "upload") {
+      const ss = ss_(), par = DriveApp.getFileById(ss.getId()).getParents();
+      const root = par.hasNext() ? par.next() : DriveApp.getRootFolder();
+      const it = root.getFoldersByName("Poster sự kiện HAMEE");
+      const folder = it.hasNext() ? it.next() : root.createFolder("Poster sự kiện HAMEE");
+      const f = folder.createFile(Utilities.newBlob(Utilities.base64Decode(d.data), d.type || "image/jpeg", d.name || "poster.jpg"));
+      try { f.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); } catch (err) {}
+      return json({ ok: true, id: f.getId() });
+    }
     if (d.action === "put") {
       Object.keys(d.tables || {}).forEach(t => { if (TABLES.includes(t)) writeTable(t, d.tables[t] || []); });
       backupDaily();

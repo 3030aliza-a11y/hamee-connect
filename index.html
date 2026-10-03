@@ -10,7 +10,7 @@
 /* Layout: cổng công khai dạng cột đơn mobile-first + khu Admin có tab bar đáy cho điện thoại */
 :root{
   --bg:#f3f5f7; --surface:#ffffff; --fg:#14202b; --muted:#5b6a78; --line:#dde3e9;
-  --steel:#23287a; --steel-2:#2e3192; --copper:#d7191f; --copper-soft:#fde3e3;
+  --steel:#1e9bd7; --steel-2:#1565d8; --sky:#e3f4fd; --sky-2:#b9e3f8; --ink:#0d2a4a; --copper:#d7191f; --copper-soft:#fde3e3;
   --ok:#1f8a5b; --ok-soft:#dff3ea; --warn:#b7791f; --warn-soft:#fbefd6; --bad:#c0392b; --bad-soft:#f9e0dd;
   --f-display:"Barlow Condensed","Arial Narrow",sans-serif;
   --f-body:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",sans-serif;
@@ -19,13 +19,14 @@
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#0e161e; --surface:#16212c; --fg:#e6edf3; --muted:#93a3b2; --line:#26343f;
-  --steel:#11143d; --steel-2:#2a2f86; --copper:#ff5a5f; --copper-soft:#3d1719;
+  --steel:#0f5f8f; --steel-2:#1a6fd0; --sky:#12324a; --sky-2:#174563; --ink:#e6f4fc; --copper:#ff5a5f; --copper-soft:#3d1719;
   --ok:#4cc38a; --ok-soft:#173327; --warn:#e2b04a; --warn-soft:#3a2e14; --bad:#ef6b5b; --bad-soft:#3d1c18; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0e161e; --surface:#16212c; --fg:#e6edf3; --muted:#93a3b2; --line:#26343f;
-  --steel:#11143d; --steel-2:#2a2f86; --copper:#ff5a5f; --copper-soft:#3d1719;
+  --steel:#0f5f8f; --steel-2:#1a6fd0; --sky:#12324a; --sky-2:#174563; --ink:#e6f4fc; --copper:#ff5a5f; --copper-soft:#3d1719;
   --ok:#4cc38a; --ok-soft:#173327; --warn:#e2b04a; --warn-soft:#3a2e14; --bad:#ef6b5b; --bad-soft:#3d1c18; color-scheme:dark}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html,body{background:var(--bg);color:var(--fg)}
 body{font-family:var(--f-body);font-size:15px;line-height:1.55;margin:0}
 a{color:var(--copper)}
@@ -45,7 +46,7 @@ button{cursor:pointer}
 .logo .lg{width:38px;height:38px;flex:none}
 .logo i{width:26px;height:26px;border-radius:6px;background:var(--copper);display:grid;place-items:center;font-style:normal;font-size:15px}
 .nav{display:flex;gap:4px;margin-left:auto;overflow-x:auto;scrollbar-width:none}
-.nav a{color:#cfdbe6;text-decoration:none;padding:8px 10px;border-radius:8px;white-space:nowrap;font-size:14px}
+.nav a{color:#eaf6fd;text-decoration:none;padding:8px 10px;border-radius:8px;white-space:nowrap;font-size:14px}
 .nav a.on,.nav a:hover{color:#fff;background:rgba(255,255,255,.1)}
 .nav a.adm{background:var(--copper);color:#fff}
 @media (max-width:760px){.nav{display:none}.menu-btn{display:block!important}}
@@ -54,12 +55,12 @@ button{cursor:pointer}
 .drawer a{color:#e6edf3;text-decoration:none;padding:10px 4px;border-bottom:1px solid rgba(255,255,255,.08)}
 
 /* hero */
-.hero{background:linear-gradient(180deg,var(--steel) 0%,var(--steel-2) 100%);color:#fff;padding-block:40px 48px;position:relative;overflow:hidden}
-.hero::after{content:"";position:absolute;inset:0;background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.04) 0 1px,transparent 1px 48px),repeating-linear-gradient(0deg,rgba(255,255,255,.04) 0 1px,transparent 1px 48px);pointer-events:none}
+.hero{background:linear-gradient(180deg,var(--sky) 0%,var(--sky-2) 100%);color:var(--ink);padding-block:40px 48px;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;inset:0;background-image:repeating-linear-gradient(90deg,rgba(21,101,216,.06) 0 1px,transparent 1px 48px),repeating-linear-gradient(0deg,rgba(21,101,216,.06) 0 1px,transparent 1px 48px);pointer-events:none}
 .hero .wrap{position:relative;z-index:1}
 .hero h1{font-size:clamp(34px,7vw,60px);font-weight:800;text-transform:uppercase;margin-block:10px 14px}
 .hero h1 span{color:var(--copper)}
-.hero p{max-width:60ch;color:#cfdbe6;margin:0 0 22px}
+.hero p{max-width:60ch;color:var(--ink);opacity:.85;margin:0 0 22px}
 .btns{display:flex;flex-wrap:wrap;gap:10px}
 .btn{border:0;border-radius:8px;padding:11px 18px;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
 .btn.pri{background:var(--copper);color:#fff}
@@ -67,10 +68,10 @@ button{cursor:pointer}
 .btn.sm{padding:7px 12px;font-size:13px}
 .btn.ok{background:var(--ok);color:#fff}.btn.bad{background:var(--bad-soft);color:var(--bad)}
 .btn.line{background:var(--surface);border:1px solid var(--line);color:var(--fg)}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(255,255,255,.15);border-radius:var(--r);overflow:hidden;margin-top:30px}
-.stats div{background:rgba(10,24,36,.55);padding:14px}
-.stats b{display:block;font-family:var(--f-display);font-size:30px;color:#fff}
-.stats small{color:#a9bccc;font-size:12px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--sky-2);border-radius:var(--r);overflow:hidden;margin-top:30px}
+.stats div{background:var(--surface);padding:14px}
+.stats b{display:block;font-family:var(--f-display);font-size:30px;color:var(--steel-2)}
+.stats small{color:var(--muted);font-size:12px}
 @media (max-width:640px){.stats{grid-template-columns:repeat(2,1fr)}}
 
 section.blk{padding-block:36px}
@@ -108,7 +109,7 @@ form.stack{display:grid;gap:12px}
 .chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
 .chip{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:6px 12px;font-size:13px;color:var(--fg)}
 .chip.on{background:var(--steel-2);color:#fff;border-color:var(--steel-2)}
-.foot{background:var(--steel);color:#a9bccc;padding-block:28px;font-size:13px;margin-top:20px}
+.foot{background:var(--steel-2);color:#dcebfb;padding-block:28px;font-size:13px;margin-top:20px}
 .foot b{color:#fff}
 .empty{padding:24px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:var(--r)}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:99px;font-size:14px;z-index:99;max-width:calc(100% - 32px)}
@@ -271,11 +272,11 @@ function renderPublic(){
  }
  else if(route==="members"){
   const q=pubFilter.q.toLowerCase();
-  const list=members.filter(m=>(!pubFilter.sector||inSec(m,pubFilter.sector))&&(!q||(m.name+m.city).toLowerCase().includes(q)));
-  body=`<section class="blk"><div class="wrap"><div class="eyebrow">Danh bạ</div><h2 style="font-size:34px;margin-bottom:14px">Hội viên HAMEE</h2>
-   <div class="filters"><input class="inp" id="q" placeholder="Tìm tên doanh nghiệp, tỉnh/thành…" value="${esc(pubFilter.q)}"></div>
+  const list=members.filter(m=>(!pubFilter.sector||inSec(m,pubFilter.sector))&&(!q||(m.name+" "+m.city+" "+(m.intro||"")).toLowerCase().includes(q)));
+  body=`<section class="blk"><div class="wrap"><div class="eyebrow">Hội viên HAMEE</div><h2 style="font-size:34px;margin-bottom:14px">Danh bạ doanh nghiệp</h2>
+   <div class="filters" style="display:grid;gap:8px"><label class="f">Nhóm ngành<select class="inp" id="secSel"><option value="">Tất cả 14 nhóm ngành (${members.length} DN)</option>${SECTORS.map(s=>`<option value="${s[0]}" ${pubFilter.sector===s[0]?"selected":""}>${s[0]} · ${s[1]} (${members.filter(m=>inSec(m,s[0])).length})</option>`).join("")}</select></label><label class="f">Từ khóa<input class="inp" id="q" placeholder="Tên doanh nghiệp, địa chỉ, sản phẩm…" value="${esc(pubFilter.q)}"></label></div>
    <div class="chips" style="margin-bottom:14px"><button class="chip ${!pubFilter.sector?"on":""}" data-sector="">Tất cả</button>${SECTORS.map(s=>`<button class="chip ${pubFilter.sector===s[0]?"on":""}" data-sector="${s[0]}">${s[0]} · ${s[1]}</button>`).join("")}</div>
-   <p class="muted num" style="font-size:13px">${list.length} doanh nghiệp</p>
+   <p class="muted num" style="font-size:13px">${list.length} doanh nghiệp${pubFilter.sector?" · nhóm "+pubFilter.sector+" "+esc(sec(pubFilter.sector)[1]):""}</p>
    <div class="grid g2">${list.map(memberCard).join("")||'<div class="empty">Chưa có doanh nghiệp phù hợp.</div>'}</div></div></section>`;
  }
  else if(route==="trade"){
@@ -307,6 +308,7 @@ function renderPublic(){
  }
  $("#app").innerHTML=shell(body);bindShell();
  document.querySelectorAll("[data-sector]").forEach(b=>b.onclick=()=>{pubFilter.sector=b.dataset.sector;route==="members"?render():go("members")});
+ const ss=$("#secSel");if(ss)ss.onchange=()=>{pubFilter.sector=ss.value;render()};
  const q=$("#q");if(q)q.oninput=()=>{pubFilter.q=q.value;const p=q.selectionStart;render();const n=$("#q");n.focus();n.setSelectionRange(p,p)};
  document.querySelectorAll("[data-mem]").forEach(c=>{c.onclick=()=>openMember(c.dataset.mem);c.onkeydown=e=>{if(e.key==="Enter")openMember(c.dataset.mem)}});
  document.querySelectorAll("[data-reg]").forEach(b=>b.onclick=()=>openRegSheet(+b.dataset.reg));

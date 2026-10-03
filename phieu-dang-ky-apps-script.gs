@@ -10,9 +10,16 @@
  *      Thực thi với tư cách: Tôi  ·  Người có quyền truy cập: Bất kỳ ai → Triển khai.
  * 5. Copy link Web App (…/exec) gửi cho người phụ trách webApp để gắn vào form.
  *
+ * CÁCH 2 (nếu Sheet không có menu Tiện ích mở rộng → Apps Script):
+ *   a. Mở Google Sheet trên máy tính, copy ID trong link: docs.google.com/spreadsheets/d/<<ID>>/edit
+ *   b. Vào https://script.google.com → Dự án mới → dán file này → điền ID vào SHEET_ID bên dưới → Lưu.
+ *   c. Làm tiếp bước 3–5 ở trên (chạy taoBang, Triển khai ứng dụng web).
+ *
  * XỬ LÝ: cột "Trạng thái" mặc định "Chờ duyệt". Ban thư ký đổi thành "Đã kết nạp" / "Từ chối" / "Đang xác minh"
  * (có danh sách chọn sẵn). Cột "Ghi chú xử lý" để ghi lại trao đổi.
  */
+const SHEET_ID = ""; // chỉ cần điền khi cài theo CÁCH 2
+const ss_ = () => SHEET_ID ? SpreadsheetApp.openById(SHEET_ID) : SpreadsheetApp.getActive();
 const EMAIL_HAMEE = "hoicokhidien@gmail.com";
 const TAB = "PhieuDangKy";
 const COLS = [
@@ -27,7 +34,7 @@ const COLS = [
 ];
 
 function taoBang() {
-  const ss = SpreadsheetApp.getActive();
+  const ss = ss_();
   const sh = ss.getSheetByName(TAB) || ss.insertSheet(TAB, 0);
   sh.getRange(1, 1, 1, COLS.length).setValues([COLS.map(c => c[1])]).setFontWeight("bold").setBackground("#1565d8").setFontColor("#ffffff").setWrap(true);
   sh.setFrozenRows(1); sh.setFrozenColumns(4);
@@ -42,7 +49,7 @@ function doPost(e) {
   if (d.action !== "dang_ky_hoi_vien") return out({ ok: false });
   const lock = LockService.getScriptLock(); lock.waitLock(20000);
   try {
-    const ss = SpreadsheetApp.getActive();
+    const ss = ss_();
     if (!ss.getSheetByName(TAB)) taoBang();
     const sh = ss.getSheetByName(TAB);
     // Lưu tệp GPKD (nếu có) vào thư mục chứa Sheet

@@ -16,6 +16,9 @@
  * events (hoạt động / sự kiện, cột regs chứa danh sách tham dự), applications (phiếu đăng ký gia nhập), settings.
  * Ban thư ký có thể mở Sheet để xem / lọc / in. Nên sửa dữ liệu trên webApp để tránh ghi đè.
  */
+// Cài theo cách 2 (script.google.com → Dự án mới): điền ID Google Sheet vào đây
+const SHEET_ID = "";
+const ss_ = () => SHEET_ID ? SpreadsheetApp.openById(SHEET_ID) : SpreadsheetApp.getActive();
 const ADMIN_KEY = "DOI-THANH-MA-BI-MAT";
 const TABLES = ["members", "fees", "care", "events", "applications", "settings"];
 
@@ -45,7 +48,7 @@ function doPost(e) {
 }
 
 function sheetOf(name) {
-  const ss = SpreadsheetApp.getActive();
+  const ss = ss_();
   return ss.getSheetByName(name) || ss.insertSheet(name);
 }
 
@@ -89,7 +92,7 @@ function backupDaily() {
   const props = PropertiesService.getScriptProperties();
   const today = Utilities.formatDate(new Date(), "Asia/Ho_Chi_Minh", "yyyy-MM-dd");
   if (props.getProperty("lastBackup") === today) return;
-  const ss = SpreadsheetApp.getActive();
+  const ss = ss_();
   const it = DriveApp.getFoldersByName("HAMEE CRM backup");
   const folder = it.hasNext() ? it.next() : DriveApp.createFolder("HAMEE CRM backup");
   DriveApp.getFileById(ss.getId()).makeCopy("HAMEE CRM " + today, folder);

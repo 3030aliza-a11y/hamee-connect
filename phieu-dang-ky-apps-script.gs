@@ -74,7 +74,35 @@ function doPost(e) {
   } finally { lock.releaseLock(); }
   return out({ ok: true });
 }
-function doGet() { return out({ ok: true, service: "HAMEE phieu dang ky" }); }
+// ---- OTP đăng nhập hội viên (qua email, miễn phí) ----
+function doGet(e) {
+  const p = (e && e.parameter) || {};
+  const email = String(p.email || "").trim().toLowerCase();
+  const cache = CacheService.getScriptCache();
+  if (p.action === "otp_send") {
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return out({ ok: false, error: "email" });
+    const n = +(cache.get("cnt_" + email) || 0);
+    if (n >= 5) return out({ ok: false, error: "qua_nhieu" });          // tối đa 5 mã / giờ / email
+    const code = String(Math.floor(100000 + Math.random() * 900000));
+    cache.put("otp_" + email, code, 600);                                 // hiệu lực 10 phút
+    cache.put("cnt_" + email, String(n + 1), 3600);
+    MailApp.sendEmail({
+      to: email,
+      subject: `Mã đăng nhập HAMEE: ${code}`,
+      body: `Mã đăng nhập tài khoản hội viên HAMEE của anh/chị là: ${code}\n\nMã có hiệu lực trong 10 phút. Không chia sẻ mã này cho người khác.\nNếu anh/chị không yêu cầu đăng nhập, vui lòng bỏ qua email này.\n\nHiệp hội Doanh nghiệp Cơ khí – Điện TP.HCM (HAMEE) · 028 3973 4081`
+    });
+    return out({ ok: true });
+  }
+  if (p.action === "otp_verify") {
+    const code = cache.get("otp_" + email);
+    const tries = +(cache.get("try_" + email) || 0);
+    if (tries >= 5) return out({ ok: false, error: "qua_nhieu" });
+    if (code && code === String(p.code || "").trim()) { cache.remove("otp_" + email); cache.remove("try_" + email); return out({ ok: true }); }
+    cache.put("try_" + email, String(tries + 1), 600);
+    return out({ ok: false, error: "sai_ma" });
+  }
+  return out({ ok: true, service: "HAMEE phieu dang ky" });
+}
 function out(o) { return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }
 
 // Chạy 1 lần trong trình soạn thảo để cấp đủ quyền (Sheet, Gmail, Drive) trước khi Triển khai

@@ -238,10 +238,11 @@ const mmdd=x=>String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).pad
 
 let ME=null;try{const v=JSON.parse(localStorage.getItem("hamee-me")||"null");if(v&&v.exp>Date.now())ME=+v.id}catch(e){}
 function hRow(h){return `<div class="card row" style="align-items:flex-start;gap:12px"><span style="font-size:20px">${h.icon}</span><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:14.5px">${esc(h.t)}</div><div class="muted num" style="font-size:12.5px">${fmt(h.date)} · ${esc(h.k||"")}</div></div><span class="pill ${h.c}">${esc(h.s)}</span></div>`}
+const TEST_EMAIL="hoicokhidien@gmail.com"; // tài khoản thử nghiệm: đăng nhập OTP xong vào Tài khoản mẫu
 function loginFormHTML(){return `<form class="card stack" id="loginForm"><label class="f">Email hội viên<input class="inp" id="lg_id" type="email" required autocomplete="email" placeholder="info@congty.vn"></label><div id="lg_otp" class="stack" hidden><label class="f">Mã OTP 6 số (kiểm tra hộp thư, cả mục Spam)<input class="inp pin" id="lg_code" inputmode="numeric" maxlength="6" autocomplete="one-time-code" style="letter-spacing:.3em"></label></div><button class="btn pri" id="lg_btn" style="justify-content:center">Gửi mã đăng nhập</button><p id="lg_err" class="muted" style="color:var(--bad);margin:0" hidden></p><p class="muted" style="font-size:12.5px;margin:0">Không nhận được mã hoặc đổi email? Liên hệ Văn phòng HAMEE: Ms. Lan <b class="num">0903 901 133</b>.</p></form>`}
 function bindLogin(root,onDone){const lf=root.querySelector("#loginForm");if(!lf)return;let step=1,mem=null;const q=s=>root.querySelector(s);const err=m=>{const x=q("#lg_err");x.textContent=m;x.hidden=!m};
  lf.onsubmit=async e=>{e.preventDefault();const em=q("#lg_id").value.trim().toLowerCase(),btn=q("#lg_btn");err("");
-  if(step===1){mem=DB.members.find(x=>x.status==="active"&&(x.email||"").toLowerCase()===em);
+  if(step===1){mem=em===TEST_EMAIL?{id:-1,name:"Tài khoản thử nghiệm HAMEE"}:DB.members.find(x=>x.status==="active"&&(x.email||"").toLowerCase()===em);
    if(!mem)return err("Email này chưa có trong danh sách hội viên HAMEE. Doanh nghiệp chưa là hội viên vui lòng đăng ký gia nhập; hội viên đổi email vui lòng liên hệ Văn phòng.");
    btn.disabled=true;btn.textContent="Đang gửi mã…";
    try{const r=await(await fetch(JOIN_URL+"?action=otp_send&email="+encodeURIComponent(em))).json();if(!r.ok)throw r.error}catch(x){btn.disabled=false;btn.textContent="Gửi mã đăng nhập";return err(x==="qua_nhieu"?"Đã gửi quá nhiều mã. Vui lòng thử lại sau 1 giờ.":"Chưa gửi được mã. Vui lòng thử lại sau ít phút.")}
@@ -249,7 +250,7 @@ function bindLogin(root,onDone){const lf=root.querySelector("#loginForm");if(!lf
   const code=q("#lg_code").value.trim();if(!/^\d{6}$/.test(code))return err("Nhập đủ 6 số trong email.");
   btn.disabled=true;btn.textContent="Đang kiểm tra…";
   try{const r=await(await fetch(JOIN_URL+"?action=otp_verify&email="+encodeURIComponent(em)+"&code="+code)).json();if(!r.ok)throw r.error}catch(x){btn.disabled=false;btn.textContent="Xác nhận";return err(x==="qua_nhieu"?"Nhập sai quá nhiều lần. Vui lòng gửi lại mã sau ít phút.":"Mã không đúng hoặc đã hết hạn (10 phút).")}
-  ME=mem.id;try{localStorage.setItem("hamee-me",JSON.stringify({id:mem.id,exp:Date.now()+30*864e5}))}catch(x){}toast("Đã xác minh: "+mem.name);onDone&&onDone(mem)}}
+  if(mem.id===-1){toast("Đăng nhập thử nghiệm thành công");return demoEnter()}ME=mem.id;try{localStorage.setItem("hamee-me",JSON.stringify({id:mem.id,exp:Date.now()+30*864e5}))}catch(x){}toast("Đã xác minh: "+mem.name);onDone&&onDone(mem)}}
 /* Chỉ hỏi đăng nhập khi dùng quyền hội viên */
 function requireMember(reason,cb){if(acct())return cb(DB.members.find(x=>x.id===ME));
  sheet(`<h3>Xác minh hội viên HAMEE</h3><p class="muted" style="margin-top:-6px">${esc(reason)} Nhập email doanh nghiệp đã đăng ký với HAMEE để nhận mã OTP. Thiết bị này được ghi nhớ 30 ngày.</p>${loginFormHTML()}<p class="muted" style="font-size:13px">Chưa là hội viên? <a href="#join" id="gojoin">Đăng ký gia nhập HAMEE</a></p>`,(bg,close)=>{bg.querySelector("#gojoin").onclick=close;bindLogin(bg,mem=>{close();render();cb(mem)})})}

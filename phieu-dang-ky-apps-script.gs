@@ -5,7 +5,7 @@
  * CÀI ĐẶT (1 lần, khoảng 5 phút):
  * 1. Mở thư mục Drive HAMEE → Mới → Google Trang tính → đặt tên "HAMEE – Phiếu đăng ký hội viên".
  * 2. Trong Sheet: Tiện ích mở rộng → Apps Script → xoá code mẫu → dán toàn bộ file này → Lưu.
- * 3. Chọn hàm "taoBang" ở thanh trên → bấm Chạy → cấp quyền. Tab PhieuDangKy được tạo sẵn tiêu đề cột.
+ * 3. Chọn hàm "taoBang" → Chạy → cấp quyền. Rồi chọn hàm "capQuyen" → Chạy → cấp quyền (Gmail, Drive).
  * 4. Triển khai → Triển khai mới → Loại: Ứng dụng web
  *      Thực thi với tư cách: Tôi  ·  Người có quyền truy cập: Bất kỳ ai → Triển khai.
  * 5. Copy link Web App (…/exec) gửi cho người phụ trách webApp để gắn vào form.
@@ -18,7 +18,7 @@
  * XỬ LÝ: cột "Trạng thái" mặc định "Chờ duyệt". Ban thư ký đổi thành "Đã kết nạp" / "Từ chối" / "Đang xác minh"
  * (có danh sách chọn sẵn). Cột "Ghi chú xử lý" để ghi lại trao đổi.
  */
-const SHEET_ID = ""; // chỉ cần điền khi cài theo CÁCH 2
+const SHEET_ID = "1T5LVQxx6tpOQL4rBlouBGCnQkrR8ERWyWk2pSdKZCKA"; // Sheet "HAMEE – Phiếu đăng ký hội viên"
 const ss_ = () => SHEET_ID ? SpreadsheetApp.openById(SHEET_ID) : SpreadsheetApp.getActive();
 const EMAIL_HAMEE = "hoicokhidien@gmail.com";
 const TAB = "PhieuDangKy";
@@ -76,3 +76,10 @@ function doPost(e) {
 }
 function doGet() { return out({ ok: true, service: "HAMEE phieu dang ky" }); }
 function out(o) { return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }
+
+// Chạy 1 lần trong trình soạn thảo để cấp đủ quyền (Sheet, Gmail, Drive) trước khi Triển khai
+function capQuyen() {
+  MailApp.getRemainingDailyQuota();
+  DriveApp.getRootFolder();
+  ss_().getName();
+}

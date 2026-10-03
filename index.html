@@ -115,6 +115,9 @@ form.stack{display:grid;gap:12px}
 .newsc{padding:0;overflow:hidden;cursor:pointer}.newsc .thumb{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;max-width:100%;background:var(--bg)}
 .mapbox{height:min(70vh,560px);border-radius:var(--r);border:1px solid var(--line);margin-bottom:8px;z-index:0}
 textarea.inp{resize:vertical}
+.tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}@media (min-width:640px){.tiles{grid-template-columns:repeat(4,1fr)}}
+.tile{display:grid;gap:2px;justify-items:start;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 12px;color:var(--fg);font:inherit;cursor:pointer}.tile:active{transform:scale(.98)}
+.tile .tic{font-size:24px;line-height:1;margin-bottom:6px}.tile b{font-size:15px}.tile small{color:var(--muted);font-size:12.5px}
 .acctabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.acctabs button{flex:none}
 .syncb{font-size:11px;padding:3px 8px;border-radius:99px;background:rgba(255,255,255,.18);color:#fff;white-space:nowrap}.syncb.ok{background:rgba(31,138,91,.85)}.syncb.bad{background:var(--bad)}
 .rowbtn{display:flex;gap:10px;align-items:center;width:100%;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:var(--r);padding:12px;font:inherit;cursor:pointer}
@@ -220,7 +223,7 @@ const SEED={
   {id:405,type:"Hợp tác",title:"Tìm đối tác OEM khuôn dập linh kiện xe máy xuất khẩu Nhật",org:"Linh Kiện Xe Sao Việt",sector:"02",date:"2026-10-03",status:"pending"}
  ]
 };
-const KEY="hamee-app-v6";
+const KEY="hamee-app-v7";
 let DB;
 try{DB=JSON.parse(localStorage.getItem(KEY))}catch(e){}
 if(!DB)DB=JSON.parse(JSON.stringify(SEED));
@@ -304,7 +307,7 @@ function shell(inner){
   <main>${inner}</main>
   <footer class="foot"><div class="wrap grid g2">
    <div><img src="${LOGO}" alt="" style="width:64px;height:64px;display:block;margin-bottom:8px"><b>HIỆP HỘI DOANH NGHIỆP CƠ KHÍ – ĐIỆN TP.HCM (HAMEE)</b><br>Thành lập theo QĐ 3259/QĐ-UB ngày 31/05/2001 của UBND TP.HCM.<br>Kết nối – Hợp tác – Cùng phát triển.</div>
-   <div>Điện thoại: <b>028 3973 4081</b><br>Website: hamee.vn<br>Bản demo nền tảng kết nối hội viên.</div></div></footer>`;
+   <div>📍 ${esc(SITE().address)}<br>Điện thoại: <b>${esc(SITE().phone)}</b><br>Email: ${esc(SITE().email)}<br>Website: ${esc(SITE().website)}</div></div></footer>`;
 }
 function bindShell(){const mb=$("#mb");if(mb)mb.onclick=()=>{$("#drawer").hidden=!$("#drawer").hidden};
  ["#lang","#lang2"].forEach(s=>{const b=$(s);if(b)b.onclick=()=>{LANG=LANG==="en"?"vi":"en";try{localStorage.setItem("hamee-lang",LANG)}catch(e){}render()}})}
@@ -373,11 +376,11 @@ function renderPublic(){
   const bd=members.filter(m=>m.bday===mmdd(today));
   const fd=members.filter(m=>m.founded&&m.founded.slice(5,7)===mmdd(today).slice(0,2)).sort((a,b)=>a.founded.slice(8)-b.founded.slice(8));
   body=`<section class="hero"><div class="wrap">
-   <div class="eyebrow">Nền tảng kết nối hội viên · 14 nhóm ngành</div>
-   <h1>Cơ khí – Điện Việt<br><span>kết nối chuỗi cung ứng</span></h1>
-   <p>Nơi doanh nghiệp hội viên HAMEE giới thiệu năng lực, tìm đối tác theo đúng nhóm ngành, đăng nhu cầu mua – bán và tham gia các chương trình xúc tiến thương mại trong nước và quốc tế.</p>
+   <div class="eyebrow">${esc(SITE().heroEyebrow)}</div>
+   <h1>${esc(SITE().heroTitle1)}<br><span>${esc(SITE().heroTitle2)}</span></h1>
+   <p>${esc(SITE().heroText)}</p>
    <div class="btns"><a class="btn pri" href="#join">Đăng ký hội viên</a><a class="btn ghost" href="#members">Tìm doanh nghiệp</a></div>
-   <div class="stats"><div><b>18</b><small>năm hình thành và phát triển</small></div><div><b class="num">500+</b><small>doanh nghiệp cơ khí – điện</small></div><div><b>10 tỷ USD</b><small>tổng quy mô hội viên</small></div><div><b class="num">20.000+</b><small>kết nối xúc tiến</small></div></div>
+   <div class="stats">${SITE().stats.map(s=>`<div><b class="num">${esc(s[0])}</b><small>${esc(s[1])}</small></div>`).join("")}</div>
   </div></section>
   <section class="blk"><div class="wrap"><div class="sec-h"><div><div class="eyebrow">Lĩnh vực hoạt động</div><h2>14 nhóm ngành</h2></div><span class="muted" style="font-size:13px">Chạm để xem doanh nghiệp trong nhóm</span></div>
    <div class="sectors">${SECTORS.map(s=>{const n=members.filter(m=>inSec(m,s[0])).length;return `<button class="sector" data-sector="${s[0]}"><code>${s[0]}</code><span>${s[1]}<small>${s[2]} · ${n} DN</small></span></button>`}).join("")}</div></div></section>
@@ -389,6 +392,7 @@ function renderPublic(){
    <div><div class="eyebrow">Chào đón</div><h2 style="font-size:26px;margin-bottom:12px">Hội viên mới</h2>${newM.length?"":`<div class="empty">Hội viên kết nạp mới qua app sẽ hiện ở đây.</div>`}<div class="list">${newM.map(m=>memberCard(m).replace("</div></div></div>",`<div class="muted num" style="font-size:12px">Gia nhập ${fmt(m.joined)}</div></div></div>`)).join("")}</div></div>
    <div><div class="eyebrow">Hôm nay ${fmt(isoL(today))}</div><h2 style="font-size:26px;margin-bottom:12px">Chúc mừng sinh nhật</h2>${bd.length?`<div class="list">${bd.map(m=>`<div class="card row"><div class="avatar" style="background:var(--copper)">🎂</div><div><b>${esc(m.rep)}</b><div class="muted" style="font-size:12.5px">${esc(m.name)}</div></div></div>`).join("")}</div><p class="muted" style="font-size:13px">HAMEE chúc anh chị tuổi mới sức khỏe, hạnh phúc và thành công.</p>`:`<div class="empty">Hôm nay không có sinh nhật hội viên.</div>`}</div></div></section>
   <section class="blk" style="padding-top:0"><div class="wrap"><div class="eyebrow">Tháng ${today.getMonth()+1}/${today.getFullYear()}</div><h2 style="font-size:26px;margin-bottom:12px">Chúc mừng ngày thành lập công ty</h2>${fd.length?`<div class="grid g2">${fd.map(m=>`<div class="card row" data-mem="${m.id}" style="cursor:pointer">${av(m)}<div style="flex:1;min-width:0"><div class="ellip" style="font-weight:600">${esc(m.name)}</div><div class="muted num" style="font-size:12.5px">Thành lập ${fmt(m.founded)} · tròn ${today.getFullYear()-+m.founded.slice(0,4)} năm</div></div></div>`).join("")}</div>`:`<div class="empty">Chưa có hội viên thành lập trong tháng này. Ban thư ký cập nhật ngày thành lập trong Admin → Hội viên → Sửa.</div>`}</div></section>
+  ${SITE().partners.trim()?`<section class="blk" style="padding-top:0"><div class="wrap"><div class="eyebrow">Đồng hành cùng HAMEE</div><h2 style="font-size:26px;margin-bottom:12px">Đối tác & Nhà tài trợ</h2>${Object.entries(SITE().partners.split("\n").map(l=>l.split("|").map(x=>x.trim())).filter(x=>x[0]).reduce((g,[a,b])=>{const k=b?a:"Đối tác",n=b||a;(g[k]=g[k]||[]).push(n);return g},{})).map(([k,ns])=>`<div style="margin-bottom:10px"><div class="muted" style="font-size:12.5px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">${esc(k)}</div><div style="display:flex;flex-wrap:wrap;gap:8px">${ns.map(n=>`<span class="card" style="padding:8px 12px;font-weight:600;font-size:14px">${esc(n)}</span>`).join("")}</div></div>`).join("")}</div></section>`:""}
   <section class="blk" style="padding-top:0"><div class="wrap"><div class="sec-h"><h2>Tin tức</h2><a href="#news">Tất cả tin →</a></div><div class="grid g3">${DB.news.filter(n=>n.pub).slice(0,3).map(newsCard).join("")}</div></div></section>`;
  }
  else if(route==="members"){
@@ -423,8 +427,9 @@ function renderPublic(){
    ${[["Kết nối – Hợp tác – Cùng phát triển","Xúc tiến thương mại, kết nối cung – cầu giữa hội viên và với thị trường trong nước, quốc tế."],["Tiếp cận – Ứng dụng KH&CN mới","Đưa công nghệ, tiêu chuẩn và mô hình quản trị mới đến doanh nghiệp hội viên."],["Đổi mới – Sáng tạo","Đồng hành cùng thương hiệu “Made by Vietnam” và chương trình Sáng tạo Việt."],["Trách nhiệm xã hội","Các hoạt động thiện nguyện, chung tay vì cộng đồng của HAMEE."]].map(x=>`<div class="card"><b>${x[0]}</b><p class="muted" style="margin:6px 0 0;font-size:14px">${x[1]}</p></div>`).join("")}</div></div></section>
   <section class="blk" style="padding-top:0"><div class="wrap grid g2">
    <div class="card"><div class="eyebrow">Hoạt động thường niên</div><ul style="margin:8px 0 0;padding-left:18px;display:grid;gap:4px"><li>HAMEE CONNECT hàng tháng</li><li>HAMEE TALK, Cafe Talk, Beer Talk</li><li>Đoàn xúc tiến thương mại: Nhật Bản, Nga – Belarus, Thái Lan…</li><li>Lịch thăm hội viên</li><li>The Voice of HAMEE, HAMEE Golf</li><li>Thư viện chính sách cho doanh nghiệp</li></ul></div>
-   <div class="card"><div class="eyebrow">Văn phòng Hiệp hội</div><div class="list" style="margin-top:8px;font-size:14px"><div>📍 198 Võ Thị Sáu, Phường Xuân Hòa, TP.HCM</div><div>☎ <span class="num">028 3973 4081</span></div><div>🌐 hamee.vn</div></div><p class="muted" style="font-size:13px;margin:10px 0 0">Cơ cấu tổ chức, Ban chấp hành và Điều lệ đầy đủ: đang cập nhật từ Ban thư ký.</p></div>
-  </div></section>`;
+   <div class="card"><div class="eyebrow">Văn phòng Hiệp hội</div><div class="list" style="margin-top:8px;font-size:14px"><div>📍 ${esc(SITE().address)}</div><div>☎ <span class="num">${esc(SITE().phone)}</span></div><div>✉ ${esc(SITE().email)}</div><div>🌐 ${esc(SITE().website)}</div>${SITE().contactName?`<div>👤 ${esc(SITE().contactName)} · <span class="num">${esc(SITE().contactPhone)}</span></div>`:""}</div></div>
+  </div></section>
+  <section class="blk" style="padding-top:0"><div class="wrap"><div class="eyebrow">Tổ chức</div><h2 style="font-size:30px;margin-bottom:12px">Cơ cấu tổ chức</h2>${SITE().org?`<div class="card" style="white-space:pre-line">${esc(SITE().org)}</div>`:`<div class="empty">Ban thư ký đang cập nhật cơ cấu tổ chức, Ban chấp hành nhiệm kỳ hiện tại.</div>`}</div></section>`;
  }
  else if(route==="map"){
   body=`<section class="blk"><div class="wrap"><div class="eyebrow">Hội viên HAMEE</div><h2 style="font-size:34px;margin-bottom:12px">Bản đồ doanh nghiệp</h2>
@@ -558,15 +563,21 @@ const ICON={
  fees:I('<rect x="2.5" y="6" width="19" height="13" rx="2"/><path d="M2.5 10h19M6.5 15h4"/>'),
  events:I('<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>'),
  reports:I('<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 17v-3M12 17v-6M16 17v-4"/>'),
+ crm:I('<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20c-.5-2.6-2-4.4-4-5.1"/>'),
+ content:I('<path d="M4 4h16v16H4z"/><path d="M8 8h8M8 12h8M8 16h5"/>'),
+ settings:I('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>'),
  approve:I('<path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/>')
 };
-const TABS={dash:"Tổng quan",members:"Hội viên",fees:"Hội phí",events:"Sự kiện",reports:"Báo cáo",approve:"Duyệt"};
+const TABS={dash:"Dashboard",crm:"CRM",events:"Sự kiện",approve:"Duyệt",content:"Nội dung"};
+const SUBT={reports:"Báo cáo & Excel",settings:"Cài đặt"};
 const EV_TYPES=["Sự kiện kết nối","Hội thảo / Talk","Xúc tiến thương mại","Thăm hội viên","Đào tạo","Thể thao / Văn nghệ","Thiện nguyện","Họp Hiệp hội"];
 const CARE_TYPES=["Gọi điện","Nhắn Zalo","Email","Thăm doanh nghiệp","Gặp tại sự kiện","Khác"];
 const PAY_METHODS=["Chuyển khoản","Tiền mặt","Khác"];
 let authed=false;try{authed=sessionStorage.getItem("hamee-adm")==="1"}catch(e){}
 
 /* ---- dữ liệu CRM ---- */
+const SITE_DEF={heroEyebrow:"Nền tảng kết nối hội viên · 14 nhóm ngành",heroTitle1:"Cơ khí – Điện Việt",heroTitle2:"kết nối chuỗi cung ứng",heroText:"Nơi doanh nghiệp hội viên HAMEE giới thiệu năng lực, tìm đối tác theo đúng nhóm ngành, đăng nhu cầu mua – bán và tham gia các chương trình xúc tiến thương mại trong nước và quốc tế.",stats:[["18","năm hình thành và phát triển"],["500+","doanh nghiệp cơ khí – điện"],["10 tỷ USD","tổng quy mô hội viên"],["20.000+","kết nối xúc tiến"]],address:"198 Võ Thị Sáu, Phường Xuân Hòa, TP.HCM",phone:"028 3973 4081",email:"hoicokhidien@gmail.com",website:"hamee.vn",contactName:"Ms. Lan – Chánh Văn phòng",contactPhone:"0903 901 133",org:"",partners:"",sheetJoin:"https://docs.google.com/spreadsheets/d/1T5LVQxx6tpOQL4rBlouBGCnQkrR8ERWyWk2pSdKZCKA/edit",sheetTrade:"",driveFolder:"https://drive.google.com/drive/folders/1ALVsRZ5u2nEEb_PEcKgqaq6DJLVUtpFt"};
+function SITE(){DB.site=Object.assign({},SITE_DEF,DB.site||{});return DB.site}
 function crmInit(){DB.fees=DB.fees||[];DB.care=DB.care||[];DB.settings=Object.assign({year:today.getFullYear(),feeAmount:0,feeDue:today.getFullYear()+"-03-31"},DB.settings||{});DB.events.forEach(e=>{e.type=e.type||"Sự kiện kết nối";e.regs=e.regs||[]})}
 crmInit();
 const money=n=>(+n||0).toLocaleString("vi-VN")+" đ";
@@ -588,13 +599,14 @@ function mById(id){return DB.members.find(x=>x.id==id)}
 
 /* ---- đồng bộ Google Sheet (tùy chọn) ---- */
 const SYNC={url:"",key:"",state:"off",timer:null};try{const s=JSON.parse(localStorage.getItem("hamee-crm-sync")||"{}");SYNC.url=s.url||"";SYNC.key=s.key||""}catch(e){}
-const SYNC_TABLES=["members","fees","care","events","applications","settings"];
-function flat(table){const v=DB[table];return table==="settings"?[v]:v}
+const SYNC_TABLES=["members","fees","care","events","applications","settings","site","news"];
+const flat0=null;
+function flat(table){const v=DB[table];return table==="settings"||table==="site"?[v||{}]:v}
 async function crmPush(){if(!SYNC.url)return;SYNC.state="saving";syncBadge();
  try{await fetch(SYNC.url,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify({key:SYNC.key,action:"put",tables:Object.fromEntries(SYNC_TABLES.map(t=>[t,flat(t)]))})});SYNC.state="ok"}catch(e){SYNC.state="err"}syncBadge()}
 async function crmPull(){if(!SYNC.url)return false;SYNC.state="loading";syncBadge();
  try{const r=await fetch(SYNC.url+(SYNC.url.includes("?")?"&":"?")+"action=dump&key="+encodeURIComponent(SYNC.key));const j=await r.json();if(j.error)throw j.error;
-  SYNC_TABLES.forEach(t=>{if(j[t]&&j[t].length)DB[t]=t==="settings"?j[t][0]:j[t]});crmInit();try{localStorage.setItem(KEY,JSON.stringify(DB))}catch(e){}SYNC.state="ok";syncBadge();return true}
+  SYNC_TABLES.forEach(t=>{if(j[t]&&j[t].length)DB[t]=t==="settings"||t==="site"?j[t][0]:j[t]});crmInit();try{localStorage.setItem(KEY,JSON.stringify(DB))}catch(e){}SYNC.state="ok";syncBadge();return true}
  catch(e){SYNC.state="err";syncBadge();return false}}
 function syncBadge(){const b=$("#syncB");if(!b)return;b.textContent=!SYNC.url?"Lưu trên máy":({loading:"Đang tải…",saving:"Đang lưu…",ok:"Đã đồng bộ",err:"Lỗi đồng bộ"})[SYNC.state]||"Google Sheet";b.className="syncb "+(SYNC.state==="err"?"bad":SYNC.url?"ok":"")}
 const _save=save;save=function(){_save();if(SYNC.url){clearTimeout(SYNC.timer);SYNC.timer=setTimeout(crmPush,1200)}};
@@ -602,27 +614,43 @@ const _save=save;save=function(){_save();if(SYNC.url){clearTimeout(SYNC.timer);S
 /* ---- khung Admin ---- */
 function renderAdmin(){
  if(!authed){
-  $("#app").innerHTML=`<div class="login"><a class="logo" href="#home" style="color:var(--fg)"><img src="${LOGO}" alt="Logo HAMEE" class="lg" style="width:56px;height:56px">HAMEE</a><h2 style="font-size:30px;margin:18px 0 6px">CRM Hội viên</h2><p class="muted">Nhập mã PIN Ban thư ký. Bản demo: <b class="num">2026</b></p><form id="lf" class="stack"><input class="inp pin" id="pin" inputmode="numeric" maxlength="4" autocomplete="off" aria-label="Mã PIN"><button class="btn pri" style="justify-content:center">Vào CRM</button><p id="perr" class="muted" style="color:var(--bad);margin:0" hidden>Sai mã PIN, nhập lại 4 số.</p></form></div>`;
+  $("#app").innerHTML=`<div class="login"><a class="logo" href="#home" style="color:var(--fg)"><img src="${LOGO}" alt="Logo HAMEE" class="lg" style="width:56px;height:56px">HAMEE</a><h2 style="font-size:30px;margin:18px 0 6px">Quản trị HAMEE</h2><p class="muted">Nhập mã PIN Ban thư ký${DB.settings.pin?"":`. Mã mặc định: <b class="num">2026</b> (đổi trong Cài đặt)`}</p><form id="lf" class="stack"><input class="inp pin" id="pin" inputmode="numeric" maxlength="4" autocomplete="off" aria-label="Mã PIN"><button class="btn pri" style="justify-content:center">Vào Dashboard</button><p id="perr" class="muted" style="color:var(--bad);margin:0" hidden>Sai mã PIN, nhập lại 4 số.</p></form></div>`;
   $("#pin").focus();
-  $("#lf").onsubmit=async e=>{e.preventDefault();if($("#pin").value==="2026"){authed=true;try{sessionStorage.setItem("hamee-adm","1")}catch(e){}render();if(SYNC.url&&await crmPull())renderAdmin()}else $("#perr").hidden=false};
+  $("#lf").onsubmit=async e=>{e.preventDefault();if($("#pin").value===String(DB.settings.pin||"2026")){authed=true;try{sessionStorage.setItem("hamee-adm","1")}catch(e){}render();if(SYNC.url&&await crmPull())renderAdmin()}else $("#perr").hidden=false};
   return;
  }
- if(!TABS[admTab]&&admTab!=="content")admTab="dash";
+ if(!TABS[admTab]&&!SUBT[admTab])admTab="dash";
  const pend=DB.applications.filter(a=>a.status==="pending").length+DB.trades.filter(t=>t.status==="pending").length+(DB.edits||[]).filter(e=>e.status==="pending").length;
- $("#app").innerHTML=`<header class="adm-top"><img src="${LOGO}" alt="Logo HAMEE" style="width:34px;height:34px"><h1>${TABS[admTab]||"Nội dung web"}</h1><span id="syncB" class="syncb"></span><button class="btn sm ghost" style="color:#fff" id="more" aria-label="Thêm">☰</button></header>
+ $("#app").innerHTML=`<header class="adm-top"><img src="${LOGO}" alt="Logo HAMEE" style="width:34px;height:34px"><h1>${TABS[admTab]||SUBT[admTab]}</h1>${SUBT[admTab]?``:""}<span id="syncB" class="syncb"></span><button class="btn sm ghost" style="color:#fff" id="more" aria-label="Thêm">☰</button></header>
  <main class="adm-main" id="am"></main>
- <nav class="tabbar" style="grid-template-columns:repeat(6,1fr)">${Object.keys(TABS).map(k=>`<button data-tab="${k}" class="${admTab===k?"on":""}">${ICON[k]}${TABS[k]}${k==="approve"&&pend?`<span class="badge">${pend}</span>`:""}</button>`).join("")}</nav>`;
+ <nav class="tabbar" style="grid-template-columns:repeat(5,1fr)">${Object.keys(TABS).map(k=>`<button data-tab="${k}" class="${admTab===k||(k==="dash"&&SUBT[admTab])?"on":""}">${ICON[k]}${TABS[k]}${k==="approve"&&pend?`<span class="badge">${pend}</span>`:""}</button>`).join("")}</nav>`;
  syncBadge();
  document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{admTab=b.dataset.tab;renderAdmin();scrollTo(0,0)});
- $("#more").onclick=()=>sheet(`<h3>Thêm</h3><div class="list"><button class="btn line" data-mo="content">📰 Nội dung web (tin tức, tin mua bán)</button><button class="btn line" data-mo="settings">⚙️ Cài đặt hội phí & đồng bộ Google Sheet</button><a class="btn line" href="#home">🌐 Xem trang web</a><button class="btn line" data-mo="logout">🚪 Đăng xuất</button></div>`,(bg,close)=>{bg.querySelectorAll("[data-mo]").forEach(b=>b.onclick=()=>{close();const k=b.dataset.mo;if(k==="logout"){authed=false;try{sessionStorage.removeItem("hamee-adm")}catch(e){}go("home")}else if(k==="content"){admTab="content";renderAdmin()}else openSettings()})});
- ({dash:aDash,members:aMembers,fees:aFees,events:aEvents,reports:aReports,approve:aApprove,content:aContent})[admTab]($("#am"));
+ $("#more").onclick=()=>sheet(`<h3>Menu quản trị</h3><div class="list"><button class="btn line" data-mo="reports">📊 Báo cáo & xuất Excel</button><button class="btn line" data-mo="settings">⚙️ Cài đặt</button><a class="btn line" href="#home">🌐 Xem trang web</a><button class="btn line" data-mo="logout">🚪 Đăng xuất</button></div>`,(bg,close)=>{bg.querySelectorAll("[data-mo]").forEach(b=>b.onclick=()=>{close();const k=b.dataset.mo;if(k==="logout"){authed=false;try{sessionStorage.removeItem("hamee-adm")}catch(e){}go("home")}else{admTab=k;renderAdmin()}})});
+ ({dash:aHome,crm:aCRM,events:aEvents,reports:aReports,approve:aApprove,content:aContent,settings:aSettings})[admTab]($("#am"));
 }
 function seg(key,opts,def){const cur=admSeg[key]??def;return [cur,`<div class="seg">${opts.map(([k,v])=>`<button data-seg="${key}" data-v="${k}" class="${cur===k?"on":""}">${v}</button>`).join("")}</div>`]}
 function bindSeg(){document.querySelectorAll("[data-seg]").forEach(b=>b.onclick=()=>{admSeg[b.dataset.seg]=b.dataset.v;renderAdmin()})}
 function copyTxt(t,msg){navigator.clipboard?.writeText(t).then(()=>toast(msg||"Đã chép"),()=>toast("Không chép được, hãy chọn và chép tay"))}
 const yearSel=(id,v)=>`<select class="inp" id="${id}" style="width:auto">${YEARS().map(y=>`<option ${+y===+v?"selected":""}>${y}</option>`).join("")}</select>`;
 
-/* ---- TỔNG QUAN ---- */
+/* ---- DASHBOARD ---- */
+function aHome(el){const y=DB.settings.year,act=actives(),paid=act.filter(m=>feeStat(m,y).k==="paid").length,pend=DB.applications.filter(a=>a.status==="pending").length+DB.trades.filter(t=>t.status==="pending").length+(DB.edits||[]).filter(e=>e.status==="pending").length,up=DB.events.filter(e=>d(e.date)>=today).length;
+ const tiles=[["crm","members","👥","CRM Hội viên",`${act.length} hội viên`],["crm","fees","💳","Hội phí "+y,`${paid}/${act.length} đã đóng`],["crm","care","📞","Chăm sóc hội viên",`${dueCare().length} lịch đến hạn`],["events","","📅","Sự kiện & vé",`${up} sắp diễn ra`],["approve","","✅","Duyệt hồ sơ & tin",`${pend} chờ duyệt`],["content","","📰","Nội dung website","Tin tức, trang chủ, liên hệ"],["reports","","📊","Báo cáo & Excel","7 loại báo cáo"],["settings","","⚙️","Cài đặt","Hội phí, PIN, Google Sheet"]];
+ el.innerHTML=`<div class="tiles">${tiles.map(([tab,sub,ic,ti,ds])=>`<button class="tile" data-tile="${tab}" data-sub="${sub}"><span class="tic">${ic}</span><b>${ti}</b><small>${ds}</small></button>`).join("")}</div>
+ <div class="row" style="gap:8px;flex-wrap:wrap;margin:12px 0 18px">${SITE().sheetJoin?`<a class="btn line sm" href="${esc(SITE().sheetJoin)}" target="_blank" rel="noopener">📄 Sheet phiếu đăng ký</a>`:""}${SITE().sheetTrade?`<a class="btn line sm" href="${esc(SITE().sheetTrade)}" target="_blank" rel="noopener">📄 Sheet giao thương</a>`:""}${SITE().driveFolder?`<a class="btn line sm" href="${esc(SITE().driveFolder)}" target="_blank" rel="noopener">📁 Drive HAMEE</a>`:""}</div>
+ <div id="dstats"></div>`;
+ el.querySelectorAll("[data-tile]").forEach(b=>b.onclick=()=>{if(b.dataset.sub)admSeg.cm=b.dataset.sub;admTab=b.dataset.tile;renderAdmin();scrollTo(0,0)});
+ aDash(el.querySelector("#dstats"))}
+/* ---- CRM (hội viên · hội phí · chăm sóc) ---- */
+function aCRM(el){const [cur,s]=seg("cm",[["members","Hội viên"],["fees","Hội phí"],["care","Chăm sóc"]],"members");el.innerHTML=s+`<div id="crmBox"></div>`;bindSeg();({members:aMembers,fees:aFees,care:aCare})[cur](el.querySelector("#crmBox"))}
+function aCare(el){const [cur,s]=seg("cf",[["due","Đến hạn"],["all","Tất cả nhật ký"]],"due");const dc=new Set(dueCare().map(c=>c.id));
+ const l=DB.care.filter(c=>cur==="all"||dc.has(c.id)).sort((a,b)=>cur==="due"?d(a.next)-d(b.next):d(b.date)-d(a.date));
+ el.innerHTML=`${s}<label class="f" style="margin-bottom:10px">Ghi chăm sóc mới<input class="inp" id="cq" placeholder="Gõ tên doanh nghiệp…" autocomplete="off"></label><div class="list" id="csug" style="margin-bottom:10px"></div>
+ <div class="list">${l.map(c=>{const m=mById(c.mid)||{name:"?"};return `<div class="li"><div class="row" style="justify-content:space-between"><button class="rowbtn" data-m360="${c.mid}" style="text-align:left;font-weight:600;min-width:0"><span class="ellip">${esc(m.name)}</span></button><span class="muted num" style="font-size:12.5px;flex:none">${fmt(c.date)}</span></div><div style="font-size:14px"><b>${esc(c.type)}:</b> ${esc(c.content)}</div>${c.next?`<label class="rd" style="font-size:13px"><input type="checkbox" data-cd="${c.id}" ${c.done?"checked":""}> Hẹn lại ${fmt(c.next)} ${dc.has(c.id)?'<span class="pill bad">Đến hạn</span>':""}</label>`:""}</div>`}).join("")||`<div class="empty">${cur==="due"?"Không có lịch chăm sóc đến hạn.":"Chưa có nhật ký chăm sóc."}</div>`}</div>`;
+ bindSeg();el.querySelectorAll("[data-m360]").forEach(b=>b.onclick=()=>open360(+b.dataset.m360));
+ el.querySelectorAll("[data-cd]").forEach(c=>c.onchange=()=>{DB.care.find(x=>x.id==c.dataset.cd).done=c.checked;save();renderAdmin()});
+ const cq=el.querySelector("#cq");cq.oninput=()=>{const q=cq.value.toLowerCase();el.querySelector("#csug").innerHTML=q.length<2?"":actives().filter(m=>m.name.toLowerCase().includes(q)).slice(0,6).map(m=>`<button class="li rowbtn" data-cm="${m.id}" style="text-align:left">+ ${esc(m.name)}</button>`).join("");el.querySelectorAll("[data-cm]").forEach(b=>b.onclick=()=>careForm(mById(b.dataset.cm)))}}
 function aDash(el){
  const act=actives(),y=DB.settings.year,st=act.map(m=>feeStat(m,y)),cnt=k=>st.filter(s=>s.k===k).length;
  const paid=cnt("paid"),collected=DB.fees.filter(f=>+f.year===+y).reduce((s,f)=>s+(+f.amount||0),0);
@@ -630,14 +658,14 @@ function aDash(el){
  const engaged=act.filter(m=>attended12(m)>0).length,cold=act.length-engaged;
  const top=act.map(m=>[m,attended12(m)]).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]).slice(0,5);
  const pendApp=DB.applications.filter(a=>a.status==="pending").length,dc=dueCare();
- el.innerHTML=`<p class="muted" style="margin:0 0 10px">Hôm nay ${fmt(isoL(today))} · năm hội phí ${y}</p>
+ el.innerHTML=`<h3 style="font-size:22px;margin:0 0 4px">Việc cần làm hôm nay</h3><p class="muted" style="margin:0 0 10px">${fmt(isoL(today))} · năm hội phí ${y}</p>
  <div class="list" style="margin-bottom:14px">
   ${pendApp?`<button class="task" data-go="approve"><b class="num">${pendApp}</b><div><div style="font-weight:600">Hồ sơ gia nhập chờ duyệt</div><div class="muted" style="font-size:12.5px">Xem phiếu, gọi xác minh, kết nạp</div></div></button>`:""}
   ${cnt("overdue")+cnt("due")?`<button class="task bad" data-go="fees" data-f="unpaid"><b class="num">${cnt("overdue")+cnt("due")}</b><div><div style="font-weight:600">Hội viên chưa đóng hội phí ${y}</div><div class="muted" style="font-size:12.5px">${cnt("overdue")} quá hạn · chép danh sách để nhắc qua Zalo</div></div></button>`:""}
   ${dc.length?`<button class="task" data-go="members" data-mf="care"><b class="num">${dc.length}</b><div><div style="font-weight:600">Lịch chăm sóc đến hạn</div><div class="muted" style="font-size:12.5px">Gọi lại, hẹn thăm theo nhật ký</div></div></button>`:""}
   ${cold?`<button class="task" data-go="members" data-mf="cold"><b class="num">${cold}</b><div><div style="font-weight:600">Hội viên chưa tham gia hoạt động 12 tháng</div><div class="muted" style="font-size:12.5px">Ưu tiên mời tham gia sự kiện tới</div></div></button>`:""}
  </div>
- <div class="kpis">
+ <h3 style="font-size:22px;margin:18px 0 8px">Số liệu chính</h3><div class="kpis">
   <div class="kpi"><small>Hội viên hoạt động</small><b class="num">${act.length}</b></div>
   <div class="kpi"><small>Đã đóng phí ${y}</small><b class="num">${paid}<span class="muted" style="font-size:18px">/${act.length}</span></b><div class="bar" style="margin-top:6px"><i style="width:${act.length?paid/act.length*100:0}%"></i></div></div>
   <div class="kpi"><small>Đã thu ${y}</small><b class="num" style="font-size:24px">${money(collected)}</b>${+DB.settings.feeAmount?`<em class="muted">Dự kiến ${money(DB.settings.feeAmount*(act.length-act.filter(m=>m.feeExempt).length))}</em>`:`<em class="muted">Chưa đặt mức phí · Cài đặt</em>`}</div>
@@ -650,7 +678,7 @@ function aDash(el){
  ${top.length?`<div class="list">${top.map(([m,n],i)=>`<button class="li rowbtn" data-m360="${m.id}"><span class="num" style="font-family:var(--f-display);font-size:22px;color:var(--steel-2);width:22px">${i+1}</span><span class="ellip" style="flex:1;text-align:left">${esc(m.name)}</span><b class="num">${n} lượt</b></button>`).join("")}</div>`:`<div class="empty">Chưa có dữ liệu tham gia. Điểm danh ở tab Sự kiện để thống kê.</div>`}
  <h3 style="font-size:22px;margin:20px 0 8px">Hội phí ${y} theo nhóm ngành</h3>
  <div class="card sbars">${SECTORS.map(s=>{const ms=act.filter(m=>inSec(m,s[0]));if(!ms.length)return"";const p=ms.filter(m=>feeStat(m,y).k==="paid").length;return `<div class="r"><div><div class="ellip" style="font-size:12.5px"><code style="font-family:var(--f-mono);color:var(--copper)">${s[0]}</code> ${s[1]}</div><div class="bar" style="margin-top:3px"><i style="width:${p/ms.length*100}%"></i></div></div><b class="num" style="text-align:right;font-size:12.5px">${p}/${ms.length}</b></div>`}).join("")}</div>`;
- el.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{if(b.dataset.f)admSeg.ff=b.dataset.f;if(b.dataset.mf)admSeg.mf=b.dataset.mf;admTab=b.dataset.go;renderAdmin()});
+ el.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{if(b.dataset.f)admSeg.ff=b.dataset.f;if(b.dataset.mf)admSeg.mf=b.dataset.mf;const g=b.dataset.go;if(g==="fees"||g==="members"){admSeg.cm=g;admTab="crm"}else admTab=g;renderAdmin()});
  el.querySelectorAll("[data-m360]").forEach(b=>b.onclick=()=>open360(+b.dataset.m360));
 }
 
@@ -659,7 +687,7 @@ function aMembers(el){
  const y=DB.settings.year,[cur,s]=seg("mf",[["all","Tất cả"],["unpaid","Chưa đóng phí"],["cold","Ít tham gia"],["care","Cần chăm sóc"]],"all");
  const q=(admSeg.mq||"").toLowerCase(),dcIds=new Set(dueCare().map(c=>c.mid)),sf=admSeg.msec||"";
  const l=actives().filter(m=>(!sf||inSec(m,sf))&&(cur!=="unpaid"||["due","overdue","partial"].includes(feeStat(m,y).k))&&(cur!=="cold"||attended12(m)===0)&&(cur!=="care"||dcIds.has(m.id))&&(!q||(m.name+" "+(m.rep||"")+" "+(m.phone||"")+" "+(m.email||"")).toLowerCase().includes(q)));
- el.innerHTML=`<input class="inp" id="mq" placeholder="Tìm tên, người đại diện, SĐT, email" value="${esc(admSeg.mq||"")}" style="margin-bottom:8px"><select class="inp" id="msec" style="margin-bottom:10px"><option value="">Tất cả nhóm ngành</option>${SECTORS.map(x=>`<option value="${x[0]}" ${sf===x[0]?"selected":""}>${x[0]} · ${x[1]}</option>`).join("")}</select>${s}<p class="muted num" style="font-size:13px;margin:0 0 8px">${l.length} hội viên · chạm để mở hồ sơ 360°</p>
+ el.innerHTML=`<input class="inp" id="mq" placeholder="Tìm tên, người đại diện, SĐT, email" value="${esc(admSeg.mq||"")}" style="margin-bottom:8px"><select class="inp" id="msec" style="margin-bottom:10px"><option value="">Tất cả nhóm ngành</option>${SECTORS.map(x=>`<option value="${x[0]}" ${sf===x[0]?"selected":""}>${x[0]} · ${x[1]}</option>`).join("")}</select>${s}<div class="acts" style="margin-bottom:8px"><button class="btn line sm" id="imM">⬆ Nhập Excel hội viên</button><button class="btn line sm" id="addM2">+ Thêm tay</button></div><p class="muted num" style="font-size:13px;margin:0 0 8px">${l.length} hội viên · chạm để mở hồ sơ 360°</p>
  <div class="list">${l.slice(0,admSeg.mlim||60).map(m=>{const f=feeStat(m,y),a=attended12(m),lc=caresOf(m)[0];return `<button class="li rowbtn" data-m360="${m.id}">${av(m)}<div style="flex:1;min-width:0;text-align:left"><div class="ellip" style="font-weight:600">${esc(m.name)}</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px"><span class="pill ${f.c}">Phí ${y}: ${f.l}</span><span class="pill n">${a} hoạt động/12th</span>${lc?`<span class="pill n">CS ${fmt(lc.date)}</span>`:""}${dcIds.has(m.id)?`<span class="pill bad">Đến hạn CS</span>`:""}</div></div></button>`}).join("")||'<div class="empty">Không có hội viên phù hợp.</div>'}</div>
  ${l.length>(admSeg.mlim||60)?`<button class="btn line" id="mmore" style="width:100%;justify-content:center;margin-top:10px">Xem thêm (${l.length-(admSeg.mlim||60)})</button>`:""}
  <button class="fab" id="addM" aria-label="Thêm hội viên">+</button>`;
@@ -668,7 +696,7 @@ function aMembers(el){
  $("#msec").onchange=e=>{admSeg.msec=e.target.value;renderAdmin()};
  const mm=$("#mmore");if(mm)mm.onclick=()=>{admSeg.mlim=(admSeg.mlim||60)+60;renderAdmin()};
  el.querySelectorAll("[data-m360]").forEach(b=>b.onclick=()=>open360(+b.dataset.m360));
- $("#addM").onclick=()=>editMember();
+ $("#addM").onclick=()=>editMember();$("#addM2").onclick=()=>editMember();$("#imM").onclick=()=>openImport("members");
 }
 function editMember(m,after){
  sheet(`<h3>${m?"Sửa hồ sơ hội viên":"Thêm hội viên"}</h3><form class="stack" id="mf">
@@ -689,6 +717,40 @@ function editMember(m,after){
    if(m)Object.assign(m,v);else DB.members.push({id:nid(),sector:"00",sectors:["00"],...v,status:"active"});save();close();toast("Đã lưu hồ sơ");after?after():renderAdmin()};
   const del=bg.querySelector("#m_del");if(del)del.onclick=()=>{if(del.dataset.c){m.status="inactive";save();close();toast("Đã chuyển sang ngừng hoạt động");renderAdmin()}else{del.dataset.c=1;del.textContent="Chạm lần nữa để xác nhận"}}})}
 
+/* ---- NHẬP EXCEL (hội viên / hội phí) ---- */
+const normName=s=>String(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/đ/g,"d").replace(/\b(cong ty|cty|ct|tnhh|co phan|cp|mtv|mot thanh vien|trach nhiem huu han|san xuat|thuong mai|dich vu|sx|tm|dv|xnk|xuat nhap khau|ky thuat|kt)\b/g," ").replace(/[^a-z0-9]+/g," ").trim();
+function findMember(name,email){const e=String(email||"").trim().toLowerCase();if(e){const m=DB.members.find(x=>(x.email||"").toLowerCase()===e);if(m)return m}const n=normName(name);if(!n)return null;return DB.members.find(x=>normName(x.name)===n)||DB.members.find(x=>{const a=normName(x.name);return a.length>6&&(a.includes(n)||n.includes(a))})||null}
+const IMPORT={
+ members:{title:"Nhập danh sách hội viên",cols:[["name","Tên doanh nghiệp",["ten doanh nghiep","ten dn","doanh nghiep","cong ty","ten cong ty","name"]],["sectors","Nhóm ngành (mã 01–14, cách nhau dấu ;)",["nhom nganh","ma nganh","nganh"]],["city","Địa chỉ",["dia chi","address"]],["phone","Điện thoại DN",["dien thoai","dien thoai dn","sdt","phone","tel"]],["email","Email",["email","e-mail","mail"]],["web","Website",["website","web"]],["rep","Người đại diện",["nguoi dai dien","dai dien","ho ten","ho va ten"]],["title","Chức danh",["chuc danh","chuc vu"]],["mobile","ĐTDĐ",["dtdd","di dong","so di dong","mobile"]],["bday","Sinh nhật (tháng-ngày)",["sinh nhat","ngay sinh"]],["founded","Ngày thành lập",["ngay thanh lap","thanh lap"]],["joined","Ngày gia nhập",["ngay gia nhap","gia nhap","ngay ket nap"]],["tier","Hạng hội viên",["hang hoi vien","hang","loai hoi vien"]],["note","Ghi chú",["ghi chu","note"]]]},
+ fees:{title:"Nhập sổ thu hội phí",cols:[["name","Tên doanh nghiệp",["ten doanh nghiep","ten dn","doanh nghiep","cong ty","hoi vien"]],["email","Email (nếu có)",["email"]],["year","Năm hội phí",["nam","nam hoi phi","nam phi"]],["amount","Số tiền",["so tien","tien","amount","thanh tien","so tien dong"]],["date","Ngày đóng",["ngay dong","ngay thu","ngay","ngay chuyen khoan"]],["method","Hình thức",["hinh thuc","phuong thuc"]],["receipt","Số phiếu thu",["so phieu","so phieu thu","ma giao dich","so ct"]],["note","Ghi chú",["ghi chu","noi dung"]]]}};
+function xDate(v){if(v==null||v==="")return "";if(v instanceof Date)return isoL(v);if(typeof v==="number"){const d0=new Date(Math.round((v-25569)*864e5));return isoL(d0)}const s=String(v).trim(),m=s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);if(m)return m[3]+"-"+m[2].padStart(2,"0")+"-"+m[1].padStart(2,"0");return /^\d{4}-\d{2}-\d{2}/.test(s)?s.slice(0,10):s}
+function importTemplate(kind){const c=IMPORT[kind].cols;const ex=kind==="fees"?[["CÔNG TY CỔ PHẦN CƠ KHÍ EURORACK","",DB.settings.year,5000000,"15/03/"+DB.settings.year,"Chuyển khoản","PT-001",""]]:[["CÔNG TY TNHH VÍ DỤ","01;07","Phường Tân Thới Hiệp, TP.HCM","028 3700 0000","info@vidu.vn","vidu.vn","Nguyễn Văn A","Giám đốc","0903 000 000","10-25","2010-05-20","2026-10-01","Hội viên chính thức",""]];
+ if(!window.XLSX)return toast("Không tải được thư viện Excel");const ws=XLSX.utils.aoa_to_sheet([c.map(x=>x[1]),...ex]);ws["!cols"]=c.map(()=>({wch:24}));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Mau");XLSX.writeFile(wb,`HAMEE_mau_nhap_${kind}.xlsx`)}
+function openImport(kind){const cfg=IMPORT[kind];let rows=[],map={},heads=[];
+ sheet(`<h3>${cfg.title}</h3><p class="muted" style="margin-top:-6px;font-size:13.5px">Chọn file Excel (.xlsx) hoặc CSV. Dòng đầu là tiêu đề cột. App tự nhận cột theo tên và khớp tên doanh nghiệp với danh bạ.</p>
+ <div class="acts"><button class="btn line sm" id="imT">⬇ Tải file mẫu</button></div>
+ <label class="f" style="margin-top:10px">File dữ liệu<input class="inp" type="file" id="imF" accept=".xlsx,.xls,.csv"></label><div id="imBox"></div>`,(bg,close)=>{const q=s=>bg.querySelector(s);
+  q("#imT").onclick=()=>importTemplate(kind);
+  q("#imF").onchange=async()=>{const f=q("#imF").files[0];if(!f)return;if(!window.XLSX)return toast("Không tải được thư viện Excel");
+   const wb=XLSX.read(await f.arrayBuffer(),{cellDates:true});const aoa=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:true,defval:""});
+   heads=(aoa.shift()||[]).map(String);rows=aoa.filter(r=>r.some(x=>String(x).trim()));
+   map={};cfg.cols.forEach(([k,,al])=>{const i=heads.findIndex(h=>{const n=normName(h).replace(/ /g," ");return al.some(a=>n===a||n.startsWith(a))});if(i>=0)map[k]=i});draw()};
+  const val=(r,k)=>map[k]==null?"":r[map[k]];
+  const plan=()=>rows.map(r=>{const name=String(val(r,"name")).trim(),m=findMember(name,val(r,"email"));
+   if(kind==="members"){const secs=String(val(r,"sectors")).split(/[;,\s]+/).map(x=>x.replace(/\D/g,"").padStart(2,"0")).filter(x=>SECTORS.some(s=>s[0]===x)).slice(0,3);
+    const v={name,city:val(r,"city"),phone:String(val(r,"phone")),email:val(r,"email"),web:val(r,"web"),rep:val(r,"rep"),title:val(r,"title"),mobile:String(val(r,"mobile")),bday:val(r,"bday"),founded:xDate(val(r,"founded")),joined:xDate(val(r,"joined")),tier:val(r,"tier"),note:val(r,"note")};
+    if(secs.length){v.sectors=secs;v.sector=secs[0]}Object.keys(v).forEach(k=>{if(v[k]===""||v[k]==null)delete v[k]});return {name,m,v,ok:!!name}}
+   const amount=+String(val(r,"amount")).replace(/[^\d]/g,"")||0,year=+String(val(r,"year")).replace(/\D/g,"")||DB.settings.year;
+   return {name,m,ok:!!(m&&amount),v:{year,amount,date:xDate(val(r,"date"))||isoL(),method:val(r,"method")||"Chuyển khoản",receipt:String(val(r,"receipt")||""),note:val(r,"note")}}});
+  const draw=()=>{const P=plan(),miss=cfg.cols.filter(c=>map[c[0]]==null&&["name","amount"].includes(c[0]));
+   const nNew=P.filter(x=>x.ok&&!x.m).length,nUpd=P.filter(x=>x.ok&&x.m).length,bad=P.filter(x=>!x.ok);
+   q("#imBox").innerHTML=`<div class="card" style="margin-top:10px;font-size:14px"><b>${rows.length} dòng</b> · Nhận cột: ${cfg.cols.filter(c=>map[c[0]]!=null).map(c=>c[1]).join(", ")||"chưa nhận được cột nào"}
+    ${miss.length?`<div style="color:var(--bad);margin-top:6px">Thiếu cột bắt buộc: ${miss.map(c=>c[1]).join(", ")}. Đổi tên cột theo file mẫu.</div>`:""}
+    <div style="margin-top:8px">${kind==="members"?`✅ ${nUpd} cập nhật hội viên có sẵn · ➕ ${nNew} thêm hội viên mới`:`✅ ${P.filter(x=>x.ok).length} phiếu thu khớp hội viên · tổng ${money(P.filter(x=>x.ok).reduce((s,x)=>s+x.v.amount,0))}`}${bad.length?` · ⚠️ ${bad.length} dòng không nhập được`:""}</div></div>
+    ${bad.length?`<details style="margin-top:8px"><summary>Xem ${bad.length} dòng không nhập được</summary><div class="list" style="margin-top:6px;font-size:13px">${bad.slice(0,50).map(x=>`<div>• ${esc(x.name||"(không có tên)")} ${kind==="fees"?(x.m?"– thiếu số tiền":"– không tìm thấy trong danh bạ"):""}</div>`).join("")}</div></details>`:""}
+    ${P.some(x=>x.ok)&&!miss.length?`<button class="btn ok" id="imGo" style="width:100%;justify-content:center;margin-top:12px">Nhập ${P.filter(x=>x.ok).length} dòng</button>`:""}`;
+   const go=q("#imGo");if(go)go.onclick=()=>{let n=0;P.filter(x=>x.ok).forEach(x=>{if(kind==="members"){if(x.m)Object.assign(x.m,x.v);else DB.members.push({id:nid()+n,sector:"00",sectors:["00"],status:"active",...x.v})}else DB.fees.push({id:nid()+n,mid:x.m.id,...x.v});n++});save();close();toast(`Đã nhập ${n} dòng`);renderAdmin()}};
+ })}
 /* ---- HỒ SƠ 360° ---- */
 function open360(id){const m=mById(id);if(!m)return;let tab="info";
  const draw=bg=>{const y=DB.settings.year,f=feeStat(m,y),ps=partsOf(m),cs=caresOf(m),ph=(m.mobile||m.phone||"").trim();
@@ -723,7 +785,7 @@ function aFees(el){
  const collected=DB.fees.filter(f=>+f.year===+y).reduce((s,f)=>s+(+f.amount||0),0);
  el.innerHTML=`<div class="row" style="gap:8px;margin-bottom:10px"><span class="muted">Năm</span>${yearSel("fyear",y)}<span class="muted" style="font-size:12.5px;flex:1;text-align:right">Mức phí: ${+DB.settings.feeAmount?money(DB.settings.feeAmount):"chưa đặt"} · hạn ${fmt(DB.settings.feeDue)}</span></div>
  <div class="kpis" style="margin-bottom:12px"><div class="kpi"><small>Đã thu</small><b class="num" style="font-size:24px">${money(collected)}</b></div><div class="kpi"><small>Đã đóng / tổng</small><b class="num">${c("paid")}/${act.length}</b></div><div class="kpi"><small>Chưa đóng (quá hạn)</small><b class="num">${c("due")+c("overdue")} <span style="color:var(--bad);font-size:20px">(${c("overdue")})</span></b></div><div class="kpi"><small>Đóng thiếu · Miễn</small><b class="num">${c("partial")} · ${c("exempt")}</b></div></div>
- ${s}<div class="acts" style="margin-bottom:10px"><button class="btn line sm" id="cpRemind">Chép danh sách nhắc phí (${c("due")+c("overdue")+c("partial")})</button><button class="btn line sm" id="xFee">Xuất Excel hội phí ${y}</button></div>
+ ${s}<div class="acts" style="margin-bottom:10px"><button class="btn line sm" id="cpRemind">Chép danh sách nhắc phí (${c("due")+c("overdue")+c("partial")})</button><button class="btn line sm" id="xFee">Xuất Excel hội phí ${y}</button><button class="btn line sm" id="imFee">⬆ Nhập Excel sổ thu</button></div>
  <div class="list">${l.slice(0,admSeg.flim||80).map(([m,f])=>`<div class="li" style="grid-template-columns:1fr auto;align-items:center"><button class="rowbtn" data-m360="${m.id}" style="text-align:left;min-width:0"><div class="ellip" style="font-weight:600">${esc(m.name)}</div><div style="margin-top:4px"><span class="pill ${f.c}">${f.l}${f.sum?" · "+money(f.sum):""}</span></div></button>${["paid","exempt"].includes(f.k)?"":`<button class="btn ok sm" data-pay="${m.id}">Thu phí</button>`}</div>`).join("")||'<div class="empty">Không có hội viên phù hợp.</div>'}</div>
  ${l.length>(admSeg.flim||80)?`<button class="btn line" id="fmore" style="width:100%;justify-content:center;margin-top:10px">Xem thêm</button>`:""}`;
  bindSeg();$("#fyear").onchange=e=>{admSeg.fy=+e.target.value;renderAdmin()};
@@ -731,6 +793,7 @@ function aFees(el){
  el.querySelectorAll("[data-m360]").forEach(b=>b.onclick=()=>open360(+b.dataset.m360));
  el.querySelectorAll("[data-pay]").forEach(b=>b.onclick=()=>feeForm(mById(b.dataset.pay)));
  $("#cpRemind").onclick=()=>copyTxt(`DANH SÁCH NHẮC HỘI PHÍ ${y}\n`+rows.filter(r=>["due","overdue","partial"].includes(r[1].k)).map(([m,f],i)=>`${i+1}. ${m.name} – ${m.rep||""} – ${m.mobile||m.phone||""} – ${f.l}`).join("\n"),"Đã chép danh sách, dán vào Zalo để nhắc");
+ $("#imFee").onclick=()=>openImport("fees");
  $("#xFee").onclick=()=>runReport("fees",{year:y},REPORTS.fees.fields.map(f=>f[0]));
 }
 
@@ -813,6 +876,17 @@ function aReports(el){
 }
 
 /* ---- CÀI ĐẶT ---- */
+function aSettings(el){const S=SITE();
+ el.innerHTML=`<div class="list"><button class="btn line" id="stFee" style="justify-content:flex-start">💳 Hội phí & đồng bộ dữ liệu CRM</button></div>
+ <form class="card stack" id="pinF" style="margin-top:12px"><b>Đổi mã PIN quản trị</b><div class="two"><label class="f">PIN hiện tại<input class="inp" id="p_old" inputmode="numeric" maxlength="8" autocomplete="off"></label><label class="f">PIN mới (4–8 số)<input class="inp" id="p_new" inputmode="numeric" maxlength="8" autocomplete="off"></label></div><p id="p_err" class="muted" style="color:var(--bad);margin:0" hidden></p><button class="btn pri" style="justify-content:center">Đổi PIN</button></form>
+ <form class="card stack" id="lnkF" style="margin-top:12px"><b>Liên kết Google Sheet / Drive</b>
+  <label class="f">Sheet phiếu đăng ký hội viên<input class="inp" data-l="sheetJoin" value="${esc(S.sheetJoin)}"></label>
+  <label class="f">Sheet giao thương (tin mua bán)<input class="inp" data-l="sheetTrade" value="${esc(S.sheetTrade)}" placeholder="https://docs.google.com/spreadsheets/d/…"></label>
+  <label class="f">Thư mục Drive HAMEE<input class="inp" data-l="driveFolder" value="${esc(S.driveFolder)}"></label>
+  <button class="btn pri" style="justify-content:center">Lưu liên kết</button></form>`;
+ $("#stFee").onclick=openSettings;
+ $("#pinF").onsubmit=e=>{e.preventDefault();const o=$("#p_old").value,n=$("#p_new").value,er=$("#p_err");if(o!==String(DB.settings.pin||"2026")){er.textContent="PIN hiện tại không đúng.";er.hidden=false;return}if(!/^\d{4,8}$/.test(n)){er.textContent="PIN mới gồm 4–8 chữ số.";er.hidden=false;return}DB.settings.pin=n;save();toast("Đã đổi PIN");renderAdmin()};
+ $("#lnkF").onsubmit=e=>{e.preventDefault();el.querySelectorAll("[data-l]").forEach(i=>S[i.dataset.l]=i.value.trim());save();toast("Đã lưu liên kết")}}
 function openSettings(){const s=DB.settings;
  sheet(`<h3>Cài đặt</h3><form class="stack" id="sf"><b>Hội phí</b><div class="two"><label class="f">Năm hội phí hiện hành<input class="inp" id="s_year" type="number" value="${s.year}"></label><label class="f">Mức hội phí / năm (đ)<input class="inp" id="s_amt" inputmode="numeric" value="${s.feeAmount||""}" placeholder="VD: 5000000"></label></div><label class="f">Hạn đóng phí<input class="inp" id="s_due" type="date" value="${esc(s.feeDue)}"></label>
  <b style="margin-top:8px">Đồng bộ Google Sheet</b><p class="muted" style="margin:0;font-size:13px">Dán link Web App của Apps Script CRM và mã khóa. Khi có link, mọi máy Admin dùng chung một dữ liệu, mở Google Sheet là thấy bảng gốc.</p><label class="f">Link Web App<input class="inp" id="s_url" value="${esc(SYNC.url)}" placeholder="https://script.google.com/macros/s/…/exec"></label><label class="f">Mã khóa (ADMIN_KEY)<input class="inp" id="s_key" value="${esc(SYNC.key)}"></label>
@@ -843,10 +917,19 @@ function aApprove(el){
 }
 function newsForm(n){sheet(`<h3>${n?"Sửa tin":"Viết tin"}</h3><form class="stack" id="nf2"><label class="f">Tiêu đề *<input class="inp" id="n_title" required value="${esc(n?.title)}"></label><div class="two"><label class="f">Chuyên mục<select class="inp" id="n_cat">${["Tin tức","Tin hoạt động","Tin chuyên ngành","Tin hội viên","Thông báo"].map(x=>`<option ${n?.cat===x?"selected":""}>${x}</option>`).join("")}</select></label><label class="f">Ngày<input class="inp" type="date" id="n_date" value="${esc(n?.date||isoL())}"></label></div><label class="f">Tóm tắt<textarea class="inp" id="n_ex" rows="4">${esc(n?.ex)}</textarea></label><label class="f">Link ảnh đại diện<input class="inp" id="n_img" value="${esc(n?.img)}" placeholder="https://…"></label><label class="f">Link bài đầy đủ<input class="inp" id="n_link" value="${esc(n?.link)}" placeholder="https://hamee.vn/…"></label><label class="rd"><input type="checkbox" id="n_pub" ${n?.pub===false?"":"checked"}> Hiển thị trên web</label><button class="btn pri" style="justify-content:center">Lưu tin</button></form>`,(bg,close)=>{bg.querySelector("#nf2").onsubmit=e=>{e.preventDefault();const g=s=>bg.querySelector(s).value.trim();const v={title:g("#n_title"),cat:g("#n_cat"),date:g("#n_date"),ex:g("#n_ex"),img:g("#n_img"),link:g("#n_link"),pub:bg.querySelector("#n_pub").checked};if(n)Object.assign(n,v);else DB.news.unshift({id:nid(),...v});DB.news.sort((a,b)=>d(b.date)-d(a.date));save();close();toast("Đã lưu tin");renderAdmin()}})}
 function aContent(el){
- const [cur,s]=seg("ct",[["news","Tin tức"],["trade","Mua / Bán"]],"news");
- let html=s;
+ const [cur,s]=seg("ct",[["news","Tin tức"],["home","Trang chủ"],["contact","Giới thiệu & liên hệ"],["partners","Đối tác"],["trade","Mua / Bán"]],"news");
+ let html=s;const S=SITE();
+ if(cur==="home"||cur==="contact"||cur==="partners"){
+  const F=(k,l,ph="")=>`<label class="f">${l}<input class="inp" data-site="${k}" value="${esc(S[k])}" placeholder="${esc(ph)}"></label>`,A=(k,l,ph="",r=4)=>`<label class="f">${l}<textarea class="inp" data-site="${k}" rows="${r}" placeholder="${esc(ph)}">${esc(S[k])}</textarea></label>`;
+  html+=`<form class="card stack" id="siteF">${cur==="home"?F("heroEyebrow","Dòng nhỏ trên tiêu đề")+F("heroTitle1","Tiêu đề dòng 1")+F("heroTitle2","Tiêu đề dòng 2 (màu đỏ)")+A("heroText","Đoạn giới thiệu")+`<b>4 ô số liệu</b>`+S.stats.map((x,i)=>`<div class="two"><label class="f">Số liệu ${i+1}<input class="inp" data-stat="${i}0" value="${esc(x[0])}"></label><label class="f">Mô tả<input class="inp" data-stat="${i}1" value="${esc(x[1])}"></label></div>`).join(""):""}
+  ${cur==="contact"?F("address","Địa chỉ văn phòng")+`<div class="two">${F("phone","Điện thoại")}${F("email","Email")}</div>`+F("website","Website")+`<div class="two">${F("contactName","Người liên hệ")}${F("contactPhone","SĐT người liên hệ")}</div>`+A("org","Cơ cấu tổ chức / Ban chấp hành (hiện ở trang Giới thiệu)","Chủ tịch: …\nPhó Chủ tịch: …\nTổng Thư ký: …",8):""}
+  ${cur==="partners"?A("partners","Mỗi dòng 1 đối tác, dạng: Hạng | Tên","Tài trợ Kim cương | Công ty ABC\nTài trợ Vàng | Công ty XYZ\nĐối tác | Ngân hàng MB",10)+`<p class="muted" style="margin:0;font-size:13px">Để trống thì trang chủ không hiện mục Đối tác.</p>`:""}
+  <button class="btn pri" style="justify-content:center">Lưu & cập nhật website</button></form>`;
+  el.innerHTML=html;bindSeg();
+  el.querySelector("#siteF").onsubmit=e=>{e.preventDefault();el.querySelectorAll("[data-site]").forEach(i=>S[i.dataset.site]=i.value.trim());el.querySelectorAll("[data-stat]").forEach(i=>{const [a,b]=i.dataset.stat.split("");S.stats[+a][+b]=i.value.trim()});save();toast("Đã cập nhật website")};
+  return}
  if(cur==="news")html+=`<div class="list">${DB.news.map(n=>`<div class="li"><div class="row" style="justify-content:space-between"><span class="tag">${esc(n.cat)}</span><span class="pill ${n.pub?"ok":"n"}">${n.pub?"Đang hiển thị":"Đã ẩn"}</span></div><div style="font-weight:600">${esc(n.title)}</div><div class="acts"><button class="btn line sm" data-np="${n.id}">${n.pub?"Ẩn khỏi web":"Hiển thị lại"}</button><button class="btn line sm" data-ne="${n.id}">Sửa</button><button class="btn bad sm" data-nd="${n.id}">Xóa</button></div></div>`).join("")}</div><button class="fab" id="addN" aria-label="Viết tin">+</button>`;
- else html+=`<div class="list">${DB.trades.filter(t=>t.status==="live").map(t=>`<div class="li">${tradeCard(t).replace('class="card"','')}<div class="acts"><button class="btn bad sm" data-tr="${t.id}">Gỡ tin</button></div></div>`).join("")}</div>`;
+ else html+=`<div class="card" style="font-size:14px;margin-bottom:10px">Tin mua / bán gửi từ web và app Zalo được lưu trong <b>Google Sheet Giao thương</b>. Duyệt tin: mở Sheet, tab TinDang, đổi cột trang_thai thành "duyet".${SITE().sheetTrade?`<div style="margin-top:8px"><a class="btn pri sm" href="${esc(SITE().sheetTrade)}" target="_blank" rel="noopener">Mở Sheet giao thương</a></div>`:`<div class="muted" style="margin-top:6px">Dán link Sheet giao thương trong Cài đặt để mở nhanh tại đây.</div>`}</div><div class="list">${DB.trades.filter(t=>t.status==="live").map(t=>`<div class="li">${tradeCard(t).replace('class="card"','')}<div class="acts"><button class="btn bad sm" data-tr="${t.id}">Gỡ tin</button></div></div>`).join("")}</div>`;
  el.innerHTML=html;bindSeg();
  el.querySelectorAll("[data-np]").forEach(b=>b.onclick=()=>{const n=DB.news.find(x=>x.id==b.dataset.np);n.pub=!n.pub;save();toast(n.pub?"Đã hiển thị":"Đã ẩn");renderAdmin()});
  el.querySelectorAll("[data-tr]").forEach(b=>b.onclick=()=>{DB.trades.find(x=>x.id==b.dataset.tr).status="rejected";save();toast("Đã gỡ tin");renderAdmin()});

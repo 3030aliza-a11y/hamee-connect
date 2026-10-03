@@ -20,7 +20,7 @@
 const SHEET_ID = "";
 const ss_ = () => SHEET_ID ? SpreadsheetApp.openById(SHEET_ID) : SpreadsheetApp.getActive();
 const ADMIN_KEY = "DOI-THANH-MA-BI-MAT";
-const TABLES = ["members", "fees", "care", "events", "applications", "settings"];
+const TABLES = ["members", "fees", "care", "events", "applications", "settings", "site", "news"];
 
 function doGet(e) {
   const p = e.parameter || {};

@@ -24,10 +24,15 @@ const TABLES = ["members", "fees", "care", "events", "applications", "settings",
 
 function doGet(e) {
   const p = e.parameter || {};
+  // Dữ liệu công khai cho website (ai cũng đọc được): sự kiện (không kèm danh sách người đăng ký), tin tức, nội dung trang
+  if (p.action === "public") {
+    const ev = readTable("events").map(x => { const r = Array.isArray(x.regs) ? x.regs : []; const o = Object.assign({}, x); delete o.regs; o.regCount = r.length + readTable("public_regs").filter(q => String(q.eventId) === String(x.id) && !r.some(y => y.rid === q.rid)).length; return o; });
+    return json({ events: ev, news: readTable("news").filter(n => n.pub !== false), site: readTable("site") });
+  }
   if (p.key !== ADMIN_KEY) return json({ error: "sai_ma_khoa" });
   if (p.action === "dump") {
     const out = {};
-    TABLES.forEach(t => out[t] = readTable(t));
+    TABLES.concat(["public_regs"]).forEach(t => out[t] = readTable(t));
     return json(out);
   }
   return json({ ok: true });
@@ -35,6 +40,14 @@ function doGet(e) {
 
 function doPost(e) {
   const d = JSON.parse(e.postData.contents);
+  // Khách / hội viên đăng ký sự kiện trên website (không cần mã khoá)
+  if (d.action === "reg") {
+    const sh = sheetOf("public_regs");
+    const keys = ["rid", "eventId", "eventTitle", "date", "name", "org", "phone", "email", "mid", "qty", "unit", "amount", "paid", "checked"];
+    if (sh.getLastRow() === 0) sh.appendRow(keys);
+    sh.appendRow(keys.map(k => { const v = d.reg[k]; return v === undefined || v === null ? "" : (/^0\d+/.test(String(v)) ? "'" + v : v); }));
+    return json({ ok: true });
+  }
   if (d.key !== ADMIN_KEY) return json({ error: "sai_ma_khoa" });
   const lock = LockService.getScriptLock();
   lock.waitLock(20000);
@@ -101,4 +114,10 @@ function backupDaily() {
 
 function json(o) {
   return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);
+}
+
+// Chạy 1 lần trong trình soạn thảo để cấp quyền (Sheet, Drive) trước khi Triển khai
+function capQuyen() {
+  ss_().getName();
+  DriveApp.getRootFolder();
 }

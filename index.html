@@ -105,7 +105,7 @@ section.blk{padding-block:36px}
 .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
 .inp{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
 .filters .inp{flex:1 1 200px;width:auto}
-label.f{display:grid;gap:4px;font-size:13px;font-weight:600}
+.f{display:grid;gap:4px;font-size:13px;font-weight:600}
 form.stack{display:grid;gap:12px}
 .chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
 .chip{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:6px 12px;font-size:13px;color:var(--fg)}
@@ -115,6 +115,11 @@ form.stack{display:grid;gap:12px}
 .newsc{padding:0;overflow:hidden;cursor:pointer}.newsc .thumb{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;max-width:100%;background:var(--bg)}
 .mapbox{height:min(70vh,560px);border-radius:var(--r);border:1px solid var(--line);margin-bottom:8px;z-index:0}
 textarea.inp{resize:vertical}
+fieldset.card{margin:0;min-width:0}legend{font-family:var(--f-display);font-size:20px;font-weight:700;padding:0 6px;color:var(--steel-2)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media (max-width:560px){.two{grid-template-columns:1fr}}
+.radios,.checks{display:flex;flex-wrap:wrap;gap:6px 14px;font-weight:400;margin-top:4px}.checks{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.rd{display:flex;gap:8px;align-items:center;font-size:14px;font-weight:400;cursor:pointer}.rd input{width:18px;height:18px;accent-color:var(--steel-2);flex:none}
+.kv{display:grid;grid-template-columns:120px 1fr;gap:8px;font-size:13.5px;padding:4px 0;border-bottom:1px solid var(--line)}.kv span{color:var(--muted)}.kv b{font-weight:500;min-width:0;overflow-wrap:anywhere}
 .foot{background:var(--steel-2);color:#dcebfb;padding-block:28px;font-size:13px;margin-top:20px}
 .foot b{color:#fff}
 .empty{padding:24px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:var(--r)}
@@ -204,7 +209,7 @@ const SEED={
   {id:405,type:"Hợp tác",title:"Tìm đối tác OEM khuôn dập linh kiện xe máy xuất khẩu Nhật",org:"Linh Kiện Xe Sao Việt",sector:"02",date:"2026-10-03",status:"pending"}
  ]
 };
-const KEY="hamee-app-v4";
+const KEY="hamee-app-v5";
 let DB;
 try{DB=JSON.parse(localStorage.getItem(KEY))}catch(e){}
 if(!DB)DB=JSON.parse(JSON.stringify(SEED));
@@ -354,15 +359,48 @@ function renderPublic(){
   body=`<section class="blk"><div class="wrap"><h2 style="font-size:34px;margin-bottom:14px">Tin tức</h2><div class="grid g3">${DB.news.filter(n=>n.pub).map(newsCard).join("")}</div></div></section>`;
  }
  else if(route==="join"){
-  body=`<section class="blk"><div class="wrap" style="max-width:640px"><div class="eyebrow">Gia nhập cộng đồng 500+ doanh nghiệp</div><h2 style="font-size:34px;margin-bottom:14px">Đăng ký hội viên</h2>
-   <form class="card stack" id="joinForm">
-    <label class="f">Tên doanh nghiệp<input class="inp" id="j_name" required></label>
-    <label class="f">Nhóm ngành chính<select class="inp" id="j_sector">${SECTORS.map(s=>`<option value="${s[0]}">${s[0]} · ${s[1]}</option>`).join("")}</select></label>
-    <label class="f">Người đại diện<input class="inp" id="j_rep" required></label>
-    <label class="f">Điện thoại<input class="inp" id="j_phone" required inputmode="tel"></label>
-    <label class="f">Email<input class="inp" id="j_email" type="email"></label>
-    <button class="btn pri">Gửi đăng ký</button>
-    <p class="muted" style="font-size:12.5px;margin:0">Ban thư ký HAMEE sẽ liên hệ trong 3 ngày làm việc để hoàn tất hồ sơ theo Quy chế Hội viên.</p></form></div></section>`;
+  const R=(n,opts)=>`<div class="radios" role="radiogroup">${opts.map((o,i)=>`<label class="rd"><input type="radio" name="${n}" value="${o}" ${i===0?"required":""}> ${o}</label>`).join("")}</div>`;
+  const F=(id,lab,att="")=>`<label class="f">${lab}<input class="inp" id="${id}" ${att}></label>`;
+  body=`<section class="blk"><div class="wrap" style="max-width:720px"><div class="eyebrow">Gia nhập cộng đồng 500+ doanh nghiệp</div><h2 style="font-size:34px;margin-bottom:6px">Phiếu đăng ký gia nhập HAMEE</h2><p class="muted" style="margin:0 0 14px">Các mục có dấu * là bắt buộc. Sau khi gửi, Ban thư ký sẽ liên hệ để hoàn tất hồ sơ.</p>
+   <form class="stack" id="joinForm">
+    <fieldset class="card stack"><legend>I. Thông tin doanh nghiệp</legend>
+     ${F("j_name","Tên doanh nghiệp / Tổ chức *","required")}
+     ${F("j_addr","Địa chỉ *","required")}
+     <div class="two">${F("j_license","Giấy phép đăng ký KD số *","required")}${F("j_founded","Ngày thành lập *",'type="date" required')}</div>
+     <div class="two">${F("j_cphone","Điện thoại DN *",'required inputmode="tel"')}${F("j_cemail","Email DN *",'type="email" required')}</div>
+     ${F("j_web","Website",'placeholder="www.congty.vn"')}
+     <label class="f">Ngành nghề SXKD *<textarea class="inp" id="j_business" rows="3" required placeholder="Mô tả sản phẩm, dịch vụ chính"></textarea></label>
+     <div class="f">Nhóm ngành HAMEE (chọn 1–3) *<div class="checks" id="j_secs">${SECTORS.map(s=>`<label class="rd"><input type="checkbox" value="${s[0]}"> ${s[0]} · ${s[1]}</label>`).join("")}</div></div>
+     ${F("j_capital","Vốn đăng ký kinh doanh *",'required placeholder="VD: 20 tỷ đồng"')}
+     <div class="f">Doanh số năm *${R("j_rev",["10–20 tỉ","20–50 tỉ","50–100 tỉ","> 100 tỉ","> 1000 tỉ"])}</div>
+     <div class="f">Số lao động *${R("j_staff",["< 30","30–100","100–500","> 500"])}</div>
+     <div class="f">Lĩnh vực hoạt động *${R("j_field",["Sản xuất","Thương mại","Tư vấn / Đào tạo / Dịch vụ","Khác"])}</div>
+     <div class="f">Hình thức sở hữu *${R("j_owner",["DN Tư nhân","DN Nhà nước","DN FDI","Khác"])}</div>
+    </fieldset>
+    <fieldset class="card stack"><legend>II. Người đại diện tham gia Hội</legend>
+     ${F("j_rep","Họ và tên *","required")}
+     <div class="f">Giới tính *${R("j_gender",["Nam","Nữ"])}</div>
+     <div class="two">${F("j_dob","Ngày sinh *",'type="date" required')}${F("j_hometown","Quê quán")}</div>
+     <div class="two">${F("j_cccd","Số căn cước",'inputmode="numeric"')}${F("j_cccd_date","Ngày cấp",'type="date"')}</div>
+     ${F("j_cccd_place","Nơi cấp")}
+     <div class="two">${F("j_title","Chức danh *","required")}${F("j_phone","Điện thoại di động *",'required inputmode="tel"')}</div>
+     ${F("j_email","Email người đại diện *",'type="email" required')}
+    </fieldset>
+    <fieldset class="card stack"><legend>Trợ lý / thư ký DN (nếu có)</legend>
+     <div class="two">${F("j_as_name","Họ tên")}${F("j_as_title","Chức danh")}</div>${F("j_as_phone","Điện thoại",'inputmode="tel"')}
+    </fieldset>
+    <fieldset class="card stack"><legend>Người giới thiệu (nếu có)</legend>
+     <div class="two">${F("j_ref_name","Họ tên")}${F("j_ref_org","Đơn vị")}</div>
+    </fieldset>
+    <fieldset class="card stack"><legend>Đính kèm</legend>
+     <label class="f">Bản sao Giấy phép kinh doanh (ảnh hoặc PDF)<input class="inp" id="j_file" type="file" accept="image/*,application/pdf"></label>
+     <p class="muted" style="font-size:12.5px;margin:0">Bản demo chỉ ghi nhận tên tệp. Bản chính thức có chữ ký, đóng dấu vui lòng scan gửi email <b>hoicokhidien@gmail.com</b>.</p>
+    </fieldset>
+    <label class="rd card" style="align-items:flex-start"><input type="checkbox" id="j_agree" required> <span>Sau khi nghiên cứu Điều lệ và Quy chế hoạt động của Hiệp hội Doanh nghiệp Cơ khí – Điện TP.HCM, tôi đồng ý đăng ký tham gia Hội. Khi trở thành Hội viên, tôi cam kết thực hiện các quy định theo Điều lệ và Quy chế của Hội. *</span></label>
+    <p id="j_err" class="muted" style="color:var(--bad);margin:0" hidden></p>
+    <button class="btn pri" style="justify-content:center">Gửi phiếu đăng ký</button>
+    <p class="muted" style="font-size:12.5px;margin:0">Liên hệ: Ms. Lan – Chánh Văn phòng: <b class="num">0903 901 133</b> · Email: hoicokhidien@gmail.com</p>
+   </form></div></section>`;
  }
  $("#app").innerHTML=shell(body);bindShell();
  document.querySelectorAll("[data-sector]").forEach(b=>b.onclick=()=>{pubFilter.sector=b.dataset.sector;route==="members"?render():go("members")});
@@ -380,7 +418,15 @@ function renderPublic(){
  if(LANG==="en")translate($("#app"));
  const nt=$("#newTrade");if(nt)nt.onclick=()=>{$("#tradeForm").hidden=false;$("#t_title").focus()};
  const tf=$("#tradeForm");if(tf)tf.onsubmit=e=>{e.preventDefault();DB.trades.unshift({id:nid(),mid:ME||null,type:$("#t_type").value,title:$("#t_title").value,org:$("#t_org").value,sector:$("#t_sector").value,date:new Date().toISOString().slice(0,10),status:"pending"});save();toast("Đã gửi, chờ Ban thư ký duyệt");render()};
- const jf=$("#joinForm");if(jf)jf.onsubmit=e=>{e.preventDefault();DB.applications.unshift({id:nid(),name:$("#j_name").value,sector:$("#j_sector").value,rep:$("#j_rep").value,phone:$("#j_phone").value,email:$("#j_email").value,date:new Date().toISOString().slice(0,10),status:"pending"});save();toast("Đã gửi đăng ký hội viên");go("home")};
+ const jf=$("#joinForm");if(jf)jf.onsubmit=e=>{e.preventDefault();const v=id=>($("#"+id)||{}).value?.trim()||"",r=n=>(document.querySelector(`input[name="${n}"]:checked`)||{}).value||"";
+  const secs=[...document.querySelectorAll("#j_secs input:checked")].map(x=>x.value);const err=$("#j_err");
+  if(secs.length<1||secs.length>3){err.textContent="Chọn từ 1 đến 3 nhóm ngành HAMEE.";err.hidden=false;$("#j_secs").scrollIntoView({block:"center"});return}
+  const f=$("#j_file").files[0];
+  DB.applications.unshift({id:nid(),date:new Date().toISOString().slice(0,10),status:"pending",
+   name:v("j_name"),addr:v("j_addr"),license:v("j_license"),founded:v("j_founded"),cphone:v("j_cphone"),cemail:v("j_cemail"),web:v("j_web"),business:v("j_business"),sector:secs[0],sectors:secs,capital:v("j_capital"),rev:r("j_rev"),staff:r("j_staff"),field:r("j_field"),owner:r("j_owner"),
+   rep:v("j_rep"),gender:r("j_gender"),dob:v("j_dob"),hometown:v("j_hometown"),cccd:v("j_cccd"),cccdDate:v("j_cccd_date"),cccdPlace:v("j_cccd_place"),title:v("j_title"),phone:v("j_phone"),email:v("j_email"),
+   asName:v("j_as_name"),asTitle:v("j_as_title"),asPhone:v("j_as_phone"),refName:v("j_ref_name"),refOrg:v("j_ref_org"),file:f?f.name:""});
+  save();sheet(`<h3>Đã gửi phiếu đăng ký</h3><p>Cảm ơn ${esc(v("j_rep"))}. Ban thư ký HAMEE sẽ liên hệ qua số <b class="num">${esc(v("j_phone"))}</b> để hoàn tất hồ sơ.</p><p class="muted" style="font-size:13px">Vui lòng scan phiếu có ký tên, đóng dấu và bản sao GPKD gửi <b>hoicokhidien@gmail.com</b>.</p><button class="btn pri" id="jok" style="width:100%;justify-content:center">Về trang chủ</button>`,(bg,close)=>{bg.querySelector("#jok").onclick=()=>{close();go("home")}})};
 }
 function openMember(id){const m=DB.members.find(x=>x.id==id);if(!m)return;
  sheet(`<div class="row" style="margin-bottom:10px">${av(m)}<h3 style="margin:0;font-size:21px">${esc(m.name)}</h3></div>
@@ -451,12 +497,17 @@ function aDash(el){
 function aApprove(el){
  const [cur,s]=seg("ap",[["app",`Hội viên (${DB.applications.filter(a=>a.status==="pending").length})`],["trade",`Giao thương (${DB.trades.filter(t=>t.status==="pending").length})`],["edit",`Hồ sơ DN (${(DB.edits||[]).filter(e=>e.status==="pending").length})`],["done","Đã xử lý"]],"app");
  let html=s;
- if(cur==="app"){const l=DB.applications.filter(a=>a.status==="pending");html+=l.length?`<div class="list">${l.map(a=>`<div class="li"><div class="row"><div class="avatar">${esc(ini(a.name))}</div><div style="flex:1"><div style="font-weight:600">${esc(a.name)}</div><div class="muted" style="font-size:12.5px">Nhóm ${sec(a.sector)[0]} · ${esc(sec(a.sector)[1])}</div></div></div><div style="font-size:13px">${esc(a.rep)} · <span class="num">${esc(a.phone)}</span>${a.email?" · "+esc(a.email):""}<br><span class="muted">Gửi ngày ${fmt(a.date)}</span></div><div class="acts"><button class="btn ok sm" data-a="ok" data-id="${a.id}">Duyệt kết nạp</button><button class="btn bad sm" data-a="no" data-id="${a.id}">Từ chối</button><button class="btn line sm" data-copy="${esc(a.phone)}">Chép SĐT</button></div></div>`).join("")}</div>`:'<div class="empty">Không còn hồ sơ chờ duyệt.</div>'}
+ if(cur==="app"){const l=DB.applications.filter(a=>a.status==="pending");html+=l.length?`<div class="list">${l.map(a=>`<div class="li"><div class="row"><div class="avatar">${esc(ini(a.name))}</div><div style="flex:1"><div style="font-weight:600">${esc(a.name)}</div><div class="muted" style="font-size:12.5px">Nhóm ${(a.sectors||[a.sector]).join(", ")} · gửi ${fmt(a.date)}</div></div></div><div style="font-size:13px">${esc(a.rep)}${a.title?" – "+esc(a.title):""} · <span class="num">${esc(a.phone)}</span></div><div class="acts"><button class="btn line sm" data-view="${a.id}">Xem phiếu</button><button class="btn ok sm" data-a="ok" data-id="${a.id}">Duyệt kết nạp</button><button class="btn bad sm" data-a="no" data-id="${a.id}">Từ chối</button><button class="btn line sm" data-copy="${esc(a.phone)}">Chép SĐT</button></div></div>`).join("")}</div>`:'<div class="empty">Không còn hồ sơ chờ duyệt.</div>'}
  else if(cur==="trade"){const l=DB.trades.filter(t=>t.status==="pending");html+=l.length?`<div class="list">${l.map(t=>`<div class="li">${tradeCard(t).replace('class="card"','')}<div class="acts"><button class="btn ok sm" data-t="live" data-id="${t.id}">Duyệt hiển thị</button><button class="btn bad sm" data-t="rejected" data-id="${t.id}">Từ chối</button></div></div>`).join("")}</div>`:'<div class="empty">Không còn tin chờ duyệt.</div>'}
  else if(cur==="edit"){const l=(DB.edits||[]).filter(e=>e.status==="pending");html+=l.length?`<div class="list">${l.map(e=>{const m=DB.members.find(x=>x.id===e.mid)||{name:"?"};const diff=["intro","products","phone","email","web","founded"].filter(k=>(e[k]||"")!==(m[k]||""));return `<div class="li"><div style="font-weight:600">${esc(m.name)}</div><div class="muted" style="font-size:12.5px">Gửi ngày ${fmt(e.date)} · ${diff.length} mục thay đổi</div>${diff.map(k=>`<div style="font-size:13px"><b>${({intro:"Giới thiệu",products:"Sản phẩm",phone:"Điện thoại",email:"Email",web:"Website",founded:"Ngày thành lập"})[k]}:</b> ${esc(e[k]).slice(0,240)}</div>`).join("")}<div class="acts"><button class="btn ok sm" data-ed="ok" data-id="${e.id}">Duyệt cập nhật</button><button class="btn bad sm" data-ed="no" data-id="${e.id}">Từ chối</button></div></div>`}).join("")}</div>`:'<div class="empty">Không có cập nhật hồ sơ chờ duyệt.</div>'}
  else{const l=[...DB.applications.filter(a=>a.status!=="pending").map(a=>({t:a.name,k:"Hồ sơ",s:a.status})),...DB.trades.filter(t=>t.status!=="pending").map(t=>({t:t.title,k:"Giao thương",s:t.status}))];html+=`<div class="list">${l.map(x=>`<div class="li"><div class="row" style="justify-content:space-between"><span class="muted" style="font-size:12px">${x.k}</span><span class="pill ${x.s==="rejected"?"bad":"ok"}">${x.s==="rejected"?"Từ chối":"Đã duyệt"}</span></div><div style="font-size:14px">${esc(x.t)}</div></div>`).join("")}</div>`}
  el.innerHTML=html;bindSeg();
- el.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{const a=DB.applications.find(x=>x.id==b.dataset.id);a.status=b.dataset.a==="ok"?"approved":"rejected";if(a.status==="approved"){const t=new Date();DB.members.push({id:nid(),name:a.name,sector:a.sector,sectors:[a.sector],city:"TP.HCM",rep:a.rep,phone:a.phone,joined:t.toISOString().slice(0,10),fee:"due",bday:"",status:"active"})}save();toast(a.status==="approved"?"Đã kết nạp hội viên mới":"Đã từ chối hồ sơ");renderAdmin()});
+ el.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{const a=DB.applications.find(x=>x.id==b.dataset.id);a.status=b.dataset.a==="ok"?"approved":"rejected";if(a.status==="approved"){const t=new Date();DB.members.push({id:nid(),name:a.name,sector:a.sector,sectors:a.sectors||[a.sector],city:a.addr||"TP.HCM",rep:a.rep,phone:a.cphone||a.phone,email:a.cemail||a.email,web:a.web,intro:a.business,products:a.business,founded:a.founded,joined:t.toISOString().slice(0,10),fee:"due",bday:a.dob?a.dob.slice(5):"",status:"active"})}save();toast(a.status==="approved"?"Đã kết nạp hội viên mới":"Đã từ chối hồ sơ");renderAdmin()});
+ el.querySelectorAll("[data-view]").forEach(b=>b.onclick=()=>{const a=DB.applications.find(x=>x.id==b.dataset.view);const row=(k,v)=>v?`<div class="kv"><span>${k}</span><b>${esc(v)}</b></div>`:"";
+  sheet(`<h3>${esc(a.name)}</h3><div class="eyebrow">I. Doanh nghiệp</div>${row("Địa chỉ",a.addr)}${row("GPKD số",a.license)}${row("Ngày thành lập",fmt(a.founded))}${row("Điện thoại DN",a.cphone)}${row("Email DN",a.cemail)}${row("Website",a.web)}${row("Ngành nghề SXKD",a.business)}${row("Nhóm ngành",(a.sectors||[a.sector]).map(c=>c+" "+sec(c)[1]).join("; "))}${row("Vốn đăng ký",a.capital)}${row("Doanh số năm",a.rev)}${row("Số lao động",a.staff)}${row("Lĩnh vực",a.field)}${row("Sở hữu",a.owner)}
+  <div class="eyebrow" style="margin-top:12px">II. Người đại diện</div>${row("Họ tên",a.rep)}${row("Giới tính",a.gender)}${row("Ngày sinh",fmt(a.dob))}${row("Quê quán",a.hometown)}${row("Căn cước",a.cccd)}${row("Ngày cấp",fmt(a.cccdDate))}${row("Nơi cấp",a.cccdPlace)}${row("Chức danh",a.title)}${row("ĐTDĐ",a.phone)}${row("Email",a.email)}
+  ${a.asName?`<div class="eyebrow" style="margin-top:12px">Trợ lý / thư ký</div>${row("Họ tên",a.asName)}${row("Chức danh",a.asTitle)}${row("Điện thoại",a.asPhone)}`:""}${a.refName?`<div class="eyebrow" style="margin-top:12px">Người giới thiệu</div>${row("Họ tên",a.refName)}${row("Đơn vị",a.refOrg)}`:""}${row("Tệp GPKD",a.file)}
+  <button class="btn line" id="vc" style="margin-top:12px;width:100%;justify-content:center">Đóng</button>`,(bg,close)=>{bg.querySelector("#vc").onclick=close})});
  el.querySelectorAll("[data-ed]").forEach(b=>b.onclick=()=>{const e=DB.edits.find(x=>x.id==b.dataset.id);e.status=b.dataset.ed==="ok"?"approved":"rejected";if(e.status==="approved"){const m=DB.members.find(x=>x.id===e.mid);["intro","products","phone","email","web","founded"].forEach(k=>m[k]=e[k])}save();toast(e.status==="approved"?"Đã cập nhật hồ sơ doanh nghiệp":"Đã từ chối cập nhật");renderAdmin()});
  el.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{const t=DB.trades.find(x=>x.id==b.dataset.id);t.status=b.dataset.t;save();toast(t.status==="live"?"Đã hiển thị trên bảng tin":"Đã từ chối tin");renderAdmin()});
  el.querySelectorAll("[data-copy]").forEach(b=>b.onclick=()=>{navigator.clipboard?.writeText(b.dataset.copy).then(()=>toast("Đã chép "+b.dataset.copy),()=>toast(b.dataset.copy))});
